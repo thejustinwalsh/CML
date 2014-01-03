@@ -5,51 +5,48 @@
 //----------------------------------------------------------------------------------------------------
 
 
-package org.si.cml.core {
-    import org.si.cml.namespaces._cml_internal;
+package org.si.cml.core;
     
+// TODO: Make an iterator so we can use that on this.
+
+/** @private */
+class CMLListElem
+{
+    public var prev:CMLListElem;
+    public var next:CMLListElem;
     
-    /** @private */
-    public class CMLListElem
+    public function new()
     {
-        static protected var sin:CMLSinTable = new CMLSinTable();
-        
-        public var prev:CMLListElem;
-        public var next:CMLListElem;
-        
-        function CMLListElem()
-        {
-        }
-        
-        public function clear() : void
-        {
-            prev = null;
-            next = null;
-        }
-        
-        public function remove_from_list() : void
-        {
-            prev.next = next;
-            next.prev = prev;
-            prev = null;
-            next = null;
-        }
-        
-        public function insert_before(next_:CMLListElem) : void
-        {
-            next = next_;
-            prev = next_.prev;
-            next_.prev.next = this;
-            next_.prev = this;
-        }
-        
-        public function insert_after(prev_:CMLListElem) : void
-        {
-            prev = prev_;
-            next = prev_.next;
-            prev_.next.prev = this;
-            prev_.next = this;
-        }
+    }
+    
+    public function clear() : Void
+    {
+        prev = null;
+        next = null;
+    }
+    
+    public function remove_from_list() : Void
+    {
+        prev.next = next;
+        next.prev = prev;
+        prev = null;
+        next = null;
+    }
+    
+    public function insert_before(next_:CMLListElem) : Void
+    {
+        next = next_;
+        prev = next_.prev;
+        next_.prev.next = this;
+        next_.prev = this;
+    }
+    
+    public function insert_after(prev_:CMLListElem) : Void
+    {
+        prev = prev_;
+        next = prev_.next;
+        prev_.next.prev = this;
+        prev_.next = this;
     }
 }
 

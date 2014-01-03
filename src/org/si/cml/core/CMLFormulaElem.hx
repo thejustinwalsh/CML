@@ -5,16 +5,15 @@
 //----------------------------------------------------------------------------------------------------
 
 
-package org.si.cml.core {
-    import org.si.cml.CMLFiber;
+package org.si.cml.core;
+
+import org.si.cml.CMLFiber;
     
-    
-    /** @private */
-    internal class CMLFormulaElem
-    {
-        public function CMLFormulaElem() { }
-        internal function calc(fbr:CMLFiber) : Number { return 0; }
-    }
+/** @private */
+class CMLFormulaElem
+{
+    public function new() { }
+    public function calc(fbr:CMLFiber) : Float { return 0.0; }
 }
 
 

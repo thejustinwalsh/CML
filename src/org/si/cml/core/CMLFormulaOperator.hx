@@ -5,29 +5,32 @@
 //----------------------------------------------------------------------------------------------------
 
 
-package org.si.cml.core {
-    import org.si.cml.CMLFiber;
-    import org.si.cml.CMLObject;
+package org.si.cml.core;
+
+import org.si.cml.CMLFiber;
+import org.si.cml.CMLObject;
     
     
-    /** @private */
-    internal class CMLFormulaOperator extends CMLFormulaElem
-    {
+/** @private */
+class CMLFormulaOperator extends CMLFormulaElem
+{
         static private  var sin:CMLSinTable = new CMLSinTable();
         
-        static internal var prefix_rex :String = "([-!(]|\\$sin|\\$cos|\\$tan|\\$asn|\\$acs|\\$atn|\\$sqr|\\$i\\?|\\$i\\?\\?|\\$int|\\$abs)";
-        static internal var postfix_rex:String = "(\\))";
+        static public var prefix_rex :String = "([-!(]|\\$sin|\\$cos|\\$tan|\\$asn|\\$acs|\\$atn|\\$sqr|\\$i\\?|\\$i\\?\\?|\\$int|\\$abs)";
+        static public var postfix_rex:String = "(\\))";
 
-        internal var priorL:Number = 0;
-        internal var priorR:Number = 0;
-        internal var oprcnt:int   = 0;
-        internal var opr0:CMLFormulaElem = null;
-        internal var opr1:CMLFormulaElem = null;
-        private  var func:Function = null;
+        public var priorL:Float = 0;
+        public var priorR:Float = 0;
+        public var oprcnt:Int   = 0;
+        public var opr0:CMLFormulaElem = null;
+        public var opr1:CMLFormulaElem = null;
+        private  var func:Float->Float->Float = null;
         
         
-        function CMLFormulaOperator(opr:String="", isSingle:Boolean=false)
+        public function new(opr:String="", isSingle:Bool=false)
         {
+            super();
+            
             if (opr.length == 0) return;
             
             if (isSingle) {
@@ -64,36 +67,36 @@ package org.si.cml.core {
         }
         
         
-        internal override function calc(fbr:CMLFiber) : Number
+        public override function calc(fbr:CMLFiber) : Float
         {
             return func(opr0.calc(fbr), (oprcnt==2) ? (opr1.calc(fbr)) : 0);
         }
         
         
-        static private function add(r0:Number, r1:Number) : Number { return r0+r1; }
-        static private function sub(r0:Number, r1:Number) : Number { return r0-r1; }
-        static private function mul(r0:Number, r1:Number) : Number { return r0*r1; }
-        static private function div(r0:Number, r1:Number) : Number { return r0/r1; }
-        static private function sup(r0:Number, r1:Number) : Number { return r0%r1; }
-        static private function neg(r0:Number, r1:Number) : Number { return -r0; }
-        static private function not(r0:Number, r1:Number) : Number { return (r0==0)?1:0; }
-        static private function snd(r0:Number, r1:Number) : Number { return sin[sin.index(r0)]; }
-        static private function csd(r0:Number, r1:Number) : Number { return sin[sin.index(r0)+sin.cos_shift]; }
-        static private function tnd(r0:Number, r1:Number) : Number { return Math.tan(r0*0.017453292519943295); }
-        static private function asn(r0:Number, r1:Number) : Number { return Math.asin(r0)*57.29577951308232; }
-        static private function acs(r0:Number, r1:Number) : Number { return Math.acos(r0)*57.29577951308232; }
-        static private function atn(r0:Number, r1:Number) : Number { return Math.atan(r0)*57.29577951308232; }
-        static private function sqr(r0:Number, r1:Number) : Number { return Math.sqrt(r0); }
-        static private function ind(r0:Number, r1:Number) : Number { return Number(int(r0)); }
-        static private function abs(r0:Number, r1:Number) : Number { return (r0<0)?(-r0):(r0); }
-        static private function ird(r0:Number, r1:Number) : Number { return Number(int(CMLObject.rand()*r0)); }
-        static private function srd(r0:Number, r1:Number) : Number { return Number(int(CMLObject.rand()*(r0*2+1))-r0); }
-        static private function grt(r0:Number, r1:Number) : Number { return (r0>r1)?1:0; }
-        static private function geq(r0:Number, r1:Number) : Number { return (r0>=r1)?1:0; }
-        static private function les(r0:Number, r1:Number) : Number { return (r0<r1)?1:0; }
-        static private function leq(r0:Number, r1:Number) : Number { return (r0<=r1)?1:0; }
-        static private function neq(r0:Number, r1:Number) : Number { return (r0!=r1)?1:0; }
-        static private function eqr(r0:Number, r1:Number) : Number { return (r0==r1)?1:0; }
+        static private function add(r0:Float, r1:Float) : Float { return r0+r1; }
+        static private function sub(r0:Float, r1:Float) : Float { return r0-r1; }
+        static private function mul(r0:Float, r1:Float) : Float { return r0*r1; }
+        static private function div(r0:Float, r1:Float) : Float { return r0/r1; }
+        static private function sup(r0:Float, r1:Float) : Float { return r0%r1; }
+        static private function neg(r0:Float, r1:Float) : Float { return -r0; }
+        static private function not(r0:Float, r1:Float) : Float { return (r0==0)?1:0; }
+        static private function snd(r0:Float, r1:Float) : Float { return sin[sin.index(r0)]; }
+        static private function csd(r0:Float, r1:Float) : Float { return sin[sin.index(r0)+sin.cos_shift]; }
+        static private function tnd(r0:Float, r1:Float) : Float { return Math.tan(r0*0.017453292519943295); }
+        static private function asn(r0:Float, r1:Float) : Float { return Math.asin(r0)*57.29577951308232; }
+        static private function acs(r0:Float, r1:Float) : Float { return Math.acos(r0)*57.29577951308232; }
+        static private function atn(r0:Float, r1:Float) : Float { return Math.atan(r0)*57.29577951308232; }
+        static private function sqr(r0:Float, r1:Float) : Float { return Math.sqrt(r0); }
+        static private function ind(r0:Float, r1:Float) : Float { return (Std.int(r0)); }
+        static private function abs(r0:Float, r1:Float) : Float { return (r0<0)?(-r0):(r0); }
+        static private function ird(r0:Float, r1:Float) : Float { return (Std.int(CMLObject.rand()*r0)); }
+        static private function srd(r0:Float, r1:Float) : Float { return (Std.int(CMLObject.rand()*(r0*2+1))-r0); }
+        static private function grt(r0:Float, r1:Float) : Float { return (r0>r1)?1:0; }
+        static private function geq(r0:Float, r1:Float) : Float { return (r0>=r1)?1:0; }
+        static private function les(r0:Float, r1:Float) : Float { return (r0<r1)?1:0; }
+        static private function leq(r0:Float, r1:Float) : Float { return (r0<=r1)?1:0; }
+        static private function neq(r0:Float, r1:Float) : Float { return (r0!=r1)?1:0; }
+        static private function eqr(r0:Float, r1:Float) : Float { return (r0==r1)?1:0; }
     }
-}
+
 

@@ -11,7 +11,7 @@ package org.si.cml.extensions {
     
     
     /** Extension of CMLObject that implements scope limitation. <br/>
-     *  You have to call ScopeLimitObject.initialize() first, and you have to call CMLObject.update() for each frame.<br/>
+     *  You have to call ScopeLimitObject.initialize() first, and you have to call CMLObject.frameUpdate() for each frame.<br/>
      *  ScopeLimitObject.initialize() registers some user define commands as below,
      *  <ul>
      *  <li>&scon; Enables the available scope.</li>
@@ -175,7 +175,7 @@ package org.si.cml.extensions {
     // override
     //----------------------------------------
         /**
-         * Callback function from CMLObject.update(). This function destroys objects that have escaped from scope. It is called after updating position.
+         * Callback function from CMLObject.frameUpdate(). This function destroys objects that have escaped from scope. It is called after updating position.
          * Override this to update own parameters, and remember to call super.onUpdate() or handle scope escape yourself.
          */
         override public function onUpdate() : void

@@ -5,37 +5,40 @@
 //----------------------------------------------------------------------------------------------------
 
 
-package org.si.cml.core {
-    import org.si.cml.CMLObject;
-    import org.si.cml.namespaces._cml_internal;
+package org.si.cml.core;
+
+import org.si.cml.CMLObject;
     
     
     /** @private */
-    public class CMLBarrageElem extends CMLListElem
-    {
+class CMLBarrageElem extends CMLListElem
+{
         // Quartarnion
-        private var count:int = 1;
+        private var count:Int = 1;
         
         // Result reference
-        internal var angle   :Number = 0;
-        internal var speed   :Number = 1;
-        internal var interval:Number = 0;
+        public var angle   :Float = 0;
+        public var speed   :Float = 1;
+        public var interval:Float = 0;
         
         // internal parameters
-        private var counter     :int    = 1;
-        private var angle_offset:Number = 0;
-        private var speed_offset:Number = 0;
-        private var angle_step  :Number = 0;
-        private var speed_step  :Number = 0;
-        private var random      :Boolean = false;
+        public var counter     :Int    = 1;
+        public var angle_offset:Float = 0;
+        public var speed_offset:Float = 0;
+        public var angle_step  :Float = 0;
+        public var speed_step  :Float = 0;
+        public var random      :Bool = false;
 
         // update function
-        internal var init  :Function = _init;
-        internal var update:Function = _update;
+        public var init  :CMLBarrageElem->Void;
+        public var update:Void->Void;
         
         
-        function CMLBarrageElem()
+        public function new()
         {
+            super();
+            init   = _init;
+            update = _update;
         }
 
 
@@ -44,7 +47,7 @@ package org.si.cml.core {
     // setting
     //--------------------------------------------------
         // set sequencial step
-        _cml_internal function setSequence(count_:int, angle_:Number, speed_:Number, interval_:Number) : CMLBarrageElem
+        public function setSequence(count_:Int, angle_:Float, speed_:Float, interval_:Float) : CMLBarrageElem
         {
             count = (count_>0) ? count_ : ((interval_>0) ? -1 : 1);
             angle = 0;
@@ -66,7 +69,7 @@ package org.si.cml.core {
 
         
         // set multiple parameters
-        internal function setMultiple(count_:int, angle_:Number, speed_:Number, interval_:Number) : CMLBarrageElem
+        public function setMultiple(count_:Int, angle_:Float, speed_:Float, interval_:Float) : CMLBarrageElem
         {
             count = (count_>0) ? count_ : 1;
             angle = 0;
@@ -88,7 +91,7 @@ package org.si.cml.core {
         
         
         // set random parameters
-        internal function setRandom(count_:int, angle_:Number, speed_:Number, interval_:Number) : CMLBarrageElem
+        public function setRandom(count_:Int, angle_:Float, speed_:Float, interval_:Float) : CMLBarrageElem
         {
             count = (count_>0) ? count_ : ((interval_>0) ? -1 : 1);
             angle = 0;
@@ -110,7 +113,7 @@ package org.si.cml.core {
         
         
         // copy all parameters
-        _cml_internal function copy(src:CMLBarrageElem) : CMLBarrageElem
+        public function copy(src:CMLBarrageElem) : CMLBarrageElem
         {
             count = src.count;
             angle = src.angle;
@@ -137,14 +140,14 @@ package org.si.cml.core {
         
         
         // set speed step
-        internal function setSpeedStep(ss:Number) : void
+        public function setSpeedStep(ss:Float) : Void
         {
             speed_step = ss;
         }
 
 
         // check end
-        internal function isEnd() : Boolean
+        public function isEnd() : Bool
         {
             return (counter == 0);
         }
@@ -155,7 +158,7 @@ package org.si.cml.core {
     // calculation of sequencial bullet
     //--------------------------------------------------
         /** @private initialize */
-        public function _init(parent:CMLBarrageElem) : void
+        public function _init(parent:CMLBarrageElem) : Void
         {
             counter = count;
             angle   = parent.angle + angle_offset;
@@ -163,7 +166,7 @@ package org.si.cml.core {
         }
         
         /** @private initialize random */
-        public function _init_random(parent:CMLBarrageElem) : void
+        public function _init_random(parent:CMLBarrageElem) : Void
         {
             counter = count;
             angle_offset = parent.angle - angle_step * 0.5;
@@ -173,7 +176,7 @@ package org.si.cml.core {
         }
 
         /** @private update */
-        public function _update() : void
+        public function _update() : Void
         {
             angle += angle_step;
             speed += speed_step;
@@ -181,11 +184,10 @@ package org.si.cml.core {
         }
         
         /** @private update random */
-        public function _update_random() : void
+        public function _update_random() : Void
         {
             angle = angle_offset + angle_step * CMLObject.rand();
             speed = speed_offset + speed_step * CMLObject.rand();
             --counter;
         }
     }
-}

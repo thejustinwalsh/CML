@@ -5,111 +5,98 @@
 //----------------------------------------------------------------------------------------------------
 
 
-package org.si.cml {
-    import org.si.cml.core.*;
-    import org.si.cml.namespaces._cml_internal;
-    import org.si.cml.namespaces._cml_fiber_internal;
+package org.si.cml;
 
+import org.si.cml.core.*;
+import flash.errors.Error;
+import haxe.CallStack;
     
-    /** Class for the fiber (Fiber is called as "micro thread" in some other languages). 
-     *  <p>
-     *  USAGE<br/>
-     *  1) Get the CMLFiber instance from CMLObject.execute().<br/>
-     *  2) CMLFiber.destroy(); stops this fiber.<br/>
-     *  3) CMLFiber.object; accesses to the CMLObject this fiber controls.<br/>
-     *  4) CMLFiber.target; accesses to the CMLObject this fiber targets to.<br/>
-     *  </p>
-     * @see CMLObject#execute()
-     * @see CMLFiber#destroy()
-     * @see CMLFiber#object
-     * @see CMLFiber#target
-     */
-    public class CMLFiber extends CMLListElem
-    {
-    // namespace
-    //------------------------------------------------------------
-        use namespace _cml_internal;
-        use namespace _cml_fiber_internal;
-        
-        
-        
-        
+/** Class for the fiber (Fiber is called as "micro thread" in some other languages). 
+ *  <p>
+ *  USAGE<br/>
+ *  1) Get the CMLFiber instance from CMLObject.execute().<br/>
+ *  2) CMLFiber.destroy(); stops this fiber.<br/>
+ *  3) CMLFiber.object; accesses to the CMLObject this fiber controls.<br/>
+ *  4) CMLFiber.target; accesses to the CMLObject this fiber targets to.<br/>
+ *  </p>
+ * @see CMLObject#execute()
+ * @see CMLFiber#destroy()
+ * @see CMLFiber#object
+ * @see CMLFiber#target
+ */
+class CMLFiber extends CMLListElem
+{
     // static variables
     //------------------------------------------------------------
-        /** @private */
-        static _cml_fiber_internal var _defaultTarget:CMLObject = null;        // default target instance
-        
-        
+        static public var _defaultTarget:CMLObject = null;        // default target instance
         
         
     // variables
     //------------------------------------------------------------
-        private  var _id       :int       = 0;     // id
-        private  var _gene     :int       = 0;     // child generation
-        private  var _object   :CMLObject = null;  // running object
-        private  var _object_id:int       = 0;     // running object id
-        private  var _target   :CMLObject = null;  // target object
-        private  var _target_id:int       = 0;     // target object id
-        private  var _barrage:CMLBarrage  = new CMLBarrage();      // bullet multiplyer
-        /** @private */ _cml_fiber_internal var _pointer  :CMLState  = null;  // executing pointer
-        /** @private */ _cml_fiber_internal var _access_id:int       = 0;     // access id
+        public  var _id       :Int       = 0;     // id
+        public  var _gene     :Int       = 0;     // child generation
+        public  var _object   :CMLObject = null;  // running object
+        public  var _object_id:Int       = 0;     // running object id
+        public  var _target   :CMLObject = null;  // target object
+        public  var _target_id:Int       = 0;     // target object id
+        public  var _barrage  :CMLBarrage;        // bullet multiplyer
+        public  var _pointer  :CMLState  = null;  // executing pointer
+        public  var _access_id:Int       = 0;     // access id
         
         // children list
-        private var _listChild:CMLList = new CMLList();
-        private var _firstDest:CMLListElem = _listChild.end;  // first destruction fiber
+        public var _listChild:CMLList;
+        public var _firstDest:CMLListElem; // first destruction fiber
 
         // setting parameters
-        /** @private */ _cml_fiber_internal var fx  :Number = 0;         // fiber position
-        /** @private */ _cml_fiber_internal var fy  :Number = 0;
-        /** @private */ _cml_fiber_internal var chgt:int    = 0;         // pos/vel/rot changing time
-        /** @private */ _cml_fiber_internal var hopt:uint   = HO_AIM;    // head option
-        /** @private */ _cml_fiber_internal var hang:Number = 0;         // head angle [degree]
-        /** @private */ _cml_fiber_internal var fang:Number = 0;         // previous fired angle (due to the compatiblity with bulletML)
-        /** @private */ _cml_fiber_internal var bul :CMLBarrageElem = new CMLBarrageElem();   // primary setting of bullet
+        // TODO (haxe conversion): Is there a better replacement for "internal"?
+        public var fx  :Float = 0;         // fiber position
+        public var fy  :Float = 0;
+        public var chgt:Int   = 0;         // pos/vel/rot changing time
+        public var hopt:Int   = HO_AIM;    // head option
+        public var hang:Float = 0;         // head angle [degree]
+        public var fang:Float = 0;         // previous fired angle (due to the compatiblity with bulletML)
+        public var bul :CMLBarrageElem;    // primary setting of bullet
         
-        /** @private */ _cml_fiber_internal var invt:uint   = 0;         // invertion flag (0=no, 1=x_reverse, 2=y_reverse, 3=xy_reverse)
-        /** @private */ _cml_fiber_internal var wtm1:int    = 1;         // waiting time for "w"
-        /** @private */ _cml_fiber_internal var wtm2:int    = 1;         // waiting time for "~"
-        /** @private */ _cml_fiber_internal var seqSub :CMLSequence = null; // previous calling sequence from "&"
-        /** @private */ _cml_fiber_internal var seqExec:CMLSequence = null; // previous calling sequence from "@"
-        /** @private */ _cml_fiber_internal var seqNew :CMLSequence = null; // previous calling sequence from "n"
-        /** @private */ _cml_fiber_internal var seqFire:CMLSequence = null; // previous calling sequence from "f"
+        public var invt:Int    = 0;         // invertion flag (0=no, 1=x_reverse, 2=y_reverse, 3=xy_reverse)
+        public var wtm1:Int    = 1;         // waiting time for "w"
+        public var wtm2:Int    = 1;         // waiting time for "~"
+        public var seqSub :CMLSequence = null; // previous calling sequence from "&"
+        public var seqExec:CMLSequence = null; // previous calling sequence from "@"
+        public var seqNew :CMLSequence = null; // previous calling sequence from "n"
+        public var seqFire:CMLSequence = null; // previous calling sequence from "f"
 
         // runtime parameters
-        /** @private */ _cml_fiber_internal var wcnt:int   = 0;            // waiting counter
-        /** @private */ _cml_fiber_internal var lcnt:Array = new Array();  // loop counter
-        /** @private */ _cml_fiber_internal var jstc:Array = new Array();  // sub routine call stac
-        /** @private */ _cml_fiber_internal var istc:Array = new Array();  // invertion flag stac
-        /** @private */ _cml_fiber_internal var vars:Array = new Array();  // arguments
-        /** @private */ _cml_fiber_internal var varc:Array = new Array();  // argument counts
+        public var wcnt:Int   = 0;          // waiting counter
+        public var lcnt:Array<Dynamic>;     // loop counter
+        public var jstc:Array<Dynamic>;     // sub routine call stac
+        public var istc:Array<Dynamic>;     // invertion flag stac
+        public var vars:Array<Dynamic>;     // arguments
+        public var varc:Array<Dynamic>;     // argument counts
         
         // head option
-        /** @private */ static _cml_fiber_internal const HO_ABS:uint = 0;
-        /** @private */ static _cml_fiber_internal const HO_PAR:uint = 1;
-        /** @private */ static _cml_fiber_internal const HO_AIM:uint = 2;
-        /** @private */ static _cml_fiber_internal const HO_FIX:uint = 3;
-        /** @private */ static _cml_fiber_internal const HO_REL:uint = 4;
-        /** @private */ static _cml_fiber_internal const HO_VEL:uint = 5;
-        /** @private */ static _cml_fiber_internal const HO_SEQ:uint = 6;
+        static inline public var HO_ABS:Int = 0;
+        static inline public var HO_PAR:Int = 1;
+        static inline public var HO_AIM:Int = 2;
+        static inline public var HO_FIX:Int = 3;
+        static inline public var HO_REL:Int = 4;
+        static inline public var HO_VEL:Int = 5;
+        static inline public var HO_SEQ:Int = 6;
         
         // I know these are very nervous implementations ('A`)...
-        /** @private */ static private  var seqDefault:CMLSequence = CMLSequence.newDefaultSequence();   // default sequence
-        /** @private */ static _cml_fiber_internal var seqRapid  :CMLSequence = CMLSequence.newRapidSequence();     // rapid fire sequence
+        static public var seqDefault:CMLSequence;   // default sequence
+        static public var seqRapid  :CMLSequence;   // rapid fire sequence
         
         // statement to wait for object destruction
-        /** @private */ private var _stateWaitDest:CMLSequence = null;
-
-        
-        
+        private var _stateWaitDest:CMLSequence = null;
         
         // executable looping max limitation in 1 frame
-        /** @private */ static _cml_fiber_internal var _loopmax:int = 1024;
+        public static var _loopmax:Int = 1024;
         
         // executable gosub max limitation
-        /** @private */ static _cml_fiber_internal var _stacmax:int = 64;
+        public static var _stacmax:Int = 64;
         
-        // id not specifyed 
-        /** @private */ static _cml_fiber_internal const ID_NOT_SPECIFYED:int = 0;
+        // id not specified 
+        public static inline var ID_NOT_SPECIFIED:Int = 0;
 
 
 
@@ -117,18 +104,26 @@ package org.si.cml {
     // properties
     //------------------------------------------------------------
         /** Maximum limitation of the executable looping count in 1 frame. @default 1024*/
-        static public function set maxLoopInFrame(lm:int):void { _loopmax = lm; }
+        static public var maxLoopInFrame(null,set):Int;
+    static public function set_maxLoopInFrame(lm:Int):Int { _loopmax = lm; return _loopmax;}
         /** Maximum limitation of the executable gosub nest count. @default 64*/
-        static public function set maxStacCount(sc:int):void   { _stacmax = sc; }
+        static public var maxStacCount(null,set):Int;
+    static public function set_maxStacCount(sc:Int):Int   { _stacmax = sc; return _stacmax;}
             
         /** CMLObject that this fiber controls. */
-        public function get object()  : CMLObject  { return _object; }
+        public var object(get,null) : CMLObject;
+        public function get_object()  : CMLObject  { return _object; }
         /** CMLObject that this fiber targets to. */
-        public function get target()  : CMLObject  { return _target; }
+        public var target(get,set) : CMLObject;
+        public function get_target() : CMLObject  { return _target; }
+        public function set_target(t:CMLObject) : CMLObject { (t==null)?_setTarget(_defaultTarget):_setTarget(t); return _target;}
+
         /** CMLBarrage that this fiber uses. */
-        public function get barrage() : CMLBarrage { return _barrage; }
+        public var barrage(get,null) : CMLBarrage;
+        public function get_barrage() : CMLBarrage { return _barrage; }
         /** Angle of this fiber. The value is set by "h*" commands. */
-        public function get angle()   : Number     { return _getAngle(0) + CMLObject.scrollAngle; }
+        public var angle(get,null) : Float;
+        public function get_angle()   : Float     { return _getAngle(0) + CMLObject.scrollAngle; }
         /** String argument. <br/>
          *  This property is used in callback function of CMLSequence.registerUserCommand().<br/>
          *  When the next statement of user command is not '...', this property shows null.
@@ -147,41 +142,57 @@ package org.si.cml {
     var seq:CMLSequence = new CMLSequence("&print'Hello World !!'");
 </listing>
          */
-        public function get string()  : String { 
-            var stateString:CMLString = _pointer.next as CMLString;
+        public var string(get,null) : String;
+        public function get_string()  : String { 
+            var stateString:CMLString = cast(_pointer.next,CMLString);
             return (stateString != null) ? stateString._string : null;
         }
         /** Sequence argument. <br/>
          *  This property is used in callback function of CMLSequence.registerUserCommand() with the option 'requireSequence' is true.<br/>
          *  When the next statement of user command is not sequence. outputs parsing error. Or, when the next statement is '{.}', returns null.
          */
-        public function get sequence() : CMLSequence {
-            var stateRefer:CMLRefer = _pointer.next as CMLRefer;
-            return (stateRefer != null) ? ((stateRefer.jump) as CMLSequence) : null;
+        public var sequence(get,null) : CMLSequence;
+        public function get_sequence() : CMLSequence {
+            var stateRefer:CMLRefer = cast(_pointer.next,CMLRefer);
+            return (stateRefer != null) ? (cast(stateRefer.jump,CMLSequence)) : null;
         }
         /** Is active ? When this property shows false, this fiber is already destroyed. */
-        public function get isActive() : Boolean { return (_object != null); }
+        public var isActive(get,null) : Bool;
+        public function get_isActive() : Bool { return (_object != null); }
         /** Is sequence executing ? */
-        public function get isExecuting() : Boolean { return (_pointer != null); }
+        public var isExecuting(get,null) : Bool;
+        public function get_isExecuting() : Bool { return (_pointer != null); }
         /** Does this fiber have any children ? */
-        public function get isParent() : Boolean { return (!_listChild.isEmpty()); }
+        public var isParent(get,null) : Bool;
+        public function get_isParent() : Bool { return (!_listChild.isEmpty()); }
         /** Does this fiber have any destruction fiber ? */
-        public function get hasDestFiber() : Boolean { return (_firstDest != _listChild.end); }
+        public var hasDestFiber(get,null) : Bool;
+        public function get_hasDestFiber() : Bool { return (_firstDest != _listChild.end); }
         
-        /** @private */
-        public function set target(t:CMLObject) : void { _setTarget((t==null)?_defaultTarget:t); }
-
 
         
         
-    // constructor
+    // Constructor
     //------------------------------------------------------------
-        /** <b>You cannot create new CMLFiber().</b> You can get CMLFiber instance only from CMLObject.execute().
+        /** <b>You cannot create new CMLFiber().</b> You can get CMLFiber instance only from
+         *  CMLObject.execute().
          *  @see CMLObject#execute()
          */
-        function CMLFiber()
+        function new()
         {
+            super();
             _gene = 0;
+            _listChild = new CMLList();
+            _firstDest = _listChild.end;
+            _barrage   = new CMLBarrage();  
+            bul        = new CMLBarrageElem();   
+            lcnt       = new Array(); 
+            jstc       = new Array();
+            istc       = new Array();
+            vars       = new Array();
+            varc       = new Array();
+            seqDefault = CMLSequence.newDefaultSequence();
+            seqRapid   = CMLSequence.newRapidSequence();
         }
 
 
@@ -192,7 +203,7 @@ package org.si.cml {
         /** Stop the fiber.<br/>
          *  This function stops all child fibers also.
          */
-        public function destroy() : void
+        public function destroy() : Void
         {
             if (isActive) _finalize();
         }
@@ -203,20 +214,22 @@ package org.si.cml {
     // operations to children
     //------------------------------------------------------------
         /** Stop all child fibers. */
-        public function destroyAllChildren() : void
+        public function destroyAllChildren() : Void
         {
             var elem     :CMLListElem;
             var elem_next:CMLListElem;
             var elem_end :CMLListElem = _listChild.end;
-            for (elem=_listChild.begin; elem!=elem_end; elem=elem_next) {
+            elem=_listChild.begin;
+            while (elem!=elem_end) {
                 elem_next = elem.next;
-                CMLFiber(elem).destroy();
+                cast(elem,CMLFiber).destroy();
+                elem=elem_next;
             }
         }
         
 
-        /** Stop child fiber with specifyed id. */
-        public function destroyChild(child_id:int) : Boolean
+        /** Stop child fiber with specified id. */
+        public function destroyChild(child_id:Int) : Bool
         {
             var fbr:CMLFiber = findChild(child_id);
             if (fbr != null) {
@@ -227,34 +240,38 @@ package org.si.cml {
         }
 
 
-        /** Find child fiber with specifyed id. */
-        public function findChild(child_id:int) : CMLFiber
+        /** Find child fiber with specified id. */
+        public function findChild(child_id:Int) : CMLFiber
         {
             var elem    :CMLListElem;
             var elem_end:CMLListElem = _firstDest;
-            for (elem=_listChild.begin; elem!=elem_end; elem=elem.next) {
-                if (CMLFiber(elem)._access_id == child_id) return CMLFiber(elem);
+            elem=_listChild.begin;
+            while  (elem!=elem_end) {
+                if (cast(elem,CMLFiber)._access_id == child_id) return cast(elem,CMLFiber);
+                elem=elem.next;
             }
             return null;
         }
 
 
-        /** Find child fiber with specifyed id. @private */
-        _cml_fiber_internal function _destroyDestFiber(destructionStatus:int) : void
+        /** Find child fiber with specified id. @private */
+        function _destroyDestFiber(destructionStatus:Int) : Void
         {
             if (hasDestFiber) {
-                var fbr:CMLFiber = CMLFiber(_firstDest);
+                var fbr:CMLFiber = cast(_firstDest,CMLFiber);
 
                 if (fbr._access_id == destructionStatus) {
                     _firstDest = fbr.next;
                     fbr.destroy();
                 } else {
                     var elem:CMLListElem, elem_end:CMLListElem = _listChild.end;
-                    for (elem=_firstDest.next; elem!=elem_end; elem=elem.next) {
-                        if (CMLFiber(elem)._access_id == destructionStatus) {
-                            CMLFiber(elem).destroy();
+                    elem=_firstDest.next;
+                    while (elem!=elem_end) {
+                        if (cast(elem,CMLFiber)._access_id == destructionStatus) {
+                            cast(elem,CMLFiber).destroy();
                             return;
                         }
+                        elem = elem.next;
                     }
                 }
             }
@@ -269,7 +286,7 @@ package org.si.cml {
          *  @param Index of variable.
          *  @return Value of variable.
          */
-        public function getVeriable(idx:int) : Number
+        public function getVeriable(idx:Int) : Float
         {
             return (idx < varc[0]) ? vars[idx] : 0;
         }
@@ -279,16 +296,16 @@ package org.si.cml {
          *  @param Nested loop index. The index of 0 means the most inner loop, and 1 means the loop 1 outside.
          *  @return Loop count. Start at 0, and end at [loop_count]-1.
          */
-        public function getLoopCounter(nest:int=0) : int
+        public function getLoopCounter(nest:Int=0) : Int
         {
             return (lcnt.length > nest) ? lcnt[nest] : 0;
         }
         
         
-        /** Get the interval value (specifyed by "i" command) of this fiber. 
+        /** Get the interval value (specified by "i" command) of this fiber. 
          *  @return Interval.
          */
-        public function getInterval() : int
+        public function getInterval() : Int
         {
             return chgt;
         }
@@ -299,7 +316,7 @@ package org.si.cml {
     // internal functions
     //------------------------------------------------------------
         // initializer (call from CMLState._fiber())
-        private function _initialize(parent:CMLFiber, obj:CMLObject, seq:CMLSequence, access_id_:int, invt_:uint=0, args_:Array=null) : Boolean
+        private function _initialize(parent:CMLFiber, obj:CMLObject, seq:CMLSequence, access_id_:Int, invt_:Int=0, args_:Array<Dynamic>=null) : Bool
         {
             _setObject(obj);            // set running object
             _access_id = access_id_;    // access id
@@ -307,22 +324,22 @@ package org.si.cml {
             _clear_param();             // clear parameters
             invt = invt_;               // set invertion flag
 
-            _pointer = CMLState(seq.next);  // set cml pointer
+            _pointer = cast(seq.next,CMLState);  // set cml pointer
             wcnt = 0;                       // reset waiting counter
-            lcnt.length = 0;                // clear loop counter stac
-            jstc.length = 0;                // clear sub-routine call stac
-            istc.length = 0;                // clear invertion stac
+            lcnt.splice(0,lcnt.length);     // clear loop counter stac
+            jstc.splice(0,jstc.length);                // clear sub-routine call stac
+            istc.splice(0,istc.length);                // clear invertion stac
             
             _firstDest = _listChild.end;    // reset last child
             
-            _unshiftArguments(seq._cml_internal::require_argc, args_);  // set argument
+            _unshiftArguments(seq.require_argc, args_);  // set argument
 
             return (_gene < _stacmax);
         }
         
         
         // finalizer 
-        private function _finalize() : void
+        private function _finalize() : Void
         {
             destroyAllChildren();
 
@@ -337,12 +354,12 @@ package org.si.cml {
 
 
         // set object
-        private function _setObject(obj:CMLObject) : void { _object = obj; _object_id = obj.id; }
-        private function _setTarget(tgt:CMLObject) : void { _target = tgt; _target_id = tgt.id; }
+        private function _setObject(obj:CMLObject) : Void { _object = obj; _object_id = obj.id; }
+        private function _setTarget(tgt:CMLObject) : Void { _target = tgt; _target_id = tgt.id; }
 
         
         // clear parameters
-        private function _clear_param() : void
+        private function _clear_param() : Void
         {
             _setTarget(_defaultTarget); // set target object
             
@@ -359,9 +376,15 @@ package org.si.cml {
             invt = 0;       // invertion flag
             wtm1 = 1;       // waiting time for "w"
             wtm2 = 1;       // waiting time for "~"
-            
-            vars.length = 0;
-            varc.length = 0;
+
+            if (vars.length > 0) {
+                // TODO (haxe conversion): Is there a better way to do this?
+                vars.splice(0,vars.length);
+            }
+            if (varc.length > 0) {
+                // TODO (haxe conversion): Is there a better way to do this?
+                varc.splice(0,varc.length);
+            }
 
             seqSub  = seqDefault;
             seqExec = seqDefault;
@@ -418,23 +441,26 @@ package org.si.cml {
             // execution
             CMLState._setInvertionFlag(invt);           // set invertion flag
             if (--wcnt <= 0) {                          // execute only if waiting counte<=0
-                var i:int = 0;
-                var res:Boolean = true;
+                var i:Int = 0;
+                var res:Bool = true;
                 while (res && _pointer!=null) {
                     res = _pointer.func(this);           // execute CMLState function
-                    _pointer = CMLState(_pointer.next);  // increment pointer
+                    _pointer = cast(_pointer.next,CMLState);  // increment pointer
 
                     // too many loops error, script may has no wait.
-                    if (++i == _loopmax) { throw new Error("CML Exection error. No wait command in the loop ?"); }
+                    if (++i == _loopmax) {
+                        throw new Error("CML Exection error. No wait command in the loop ?");
+                    }
                 }
             }
             
             // run all children
             var elem     :CMLListElem;
             var elem_end :CMLListElem = _listChild.end;
-            for (elem=_listChild.begin; elem!=elem_end;) {
-                elem = CMLFiber(elem)._onUpdate();
-            }
+            elem = _listChild.begin;
+            while (elem!=elem_end) {
+                elem = cast(elem,CMLFiber)._onUpdate();
+            } 
 
             // update next fiber
             nextElem = next;
@@ -455,9 +481,10 @@ package org.si.cml {
             // check all children
             var elem     :CMLListElem;
             var elem_end :CMLListElem = _listChild.end;
-            for (elem=_listChild.begin; elem!=elem_end;) {
-                elem = CMLFiber(elem)._destroyByObject(obj);
-            }
+            elem=_listChild.begin;
+            do {
+                elem = cast(elem,CMLFiber)._destroyByObject(obj);
+            } while( elem!=elem_end);
 
             elem = next;
             if (_object == obj) destroy();
@@ -468,9 +495,9 @@ package org.si.cml {
         
         // push arguments
         /** @private */ 
-        _cml_fiber_internal function _unshiftArguments(argCount:int=0, argArray:Array=null) : void
+        public function _unshiftArguments(argCount:Int=0, argArray:Array<Dynamic>=null) : Void
         {
-            var i:int;
+            var i:Int;
             
             if (argCount==0 && (argArray==null || argArray.length==0)) {
                 varc.unshift(0);
@@ -478,11 +505,13 @@ package org.si.cml {
                 if (argArray!=null) {
                     argCount = (argCount > argArray.length) ? argCount : argArray.length;
                     varc.unshift(argCount);
-                    for (i=argCount-1; i>=argArray.length; --i) { vars.unshift(0); }
-                    for (; i>=0; --i) { vars.unshift(argArray[i]); }
+                    i = argCount-1;
+                    while (i>=argArray.length){ vars.unshift(0); --i; }
+                    while (i>=0) { vars.unshift(argArray[i]); --i;}
                 } else {
                     varc.unshift(argCount);
-                    for (i=argCount-1; i>=0; --i) { vars.unshift(0); }
+                    i=argCount-1;
+                    while (i>=0) { vars.unshift(0); --i;}
                 }
             }
         }
@@ -490,7 +519,7 @@ package org.si.cml {
         
         // pop arguments
         /** @private */ 
-        _cml_fiber_internal function _shiftArguments() : void
+        public function _shiftArguments() : Void
         {
             vars.splice(0, varc.shift());
         }
@@ -498,7 +527,7 @@ package org.si.cml {
         
         // push invertion
         /** @private */ 
-        _cml_fiber_internal function _unshiftInvertion(invt_:uint) : void
+        public function _unshiftInvertion(invt_:Int) : Void
         {
             istc.unshift(invt);
             invt = invt_;
@@ -507,7 +536,7 @@ package org.si.cml {
         
         // pop invertion
         /** @private */ 
-        _cml_fiber_internal function _shiftInvertion() : void
+        public function _shiftInvertion() : Void
         {
             invt = istc.shift();
         }
@@ -515,16 +544,22 @@ package org.si.cml {
         
         // return fiber's head angle (angle in this game's screen, the scroll direction is 0[deg]).
         /** @private */ 
-        _cml_fiber_internal function _getAngle(base:Number) : Number
+        public function _getAngle(base:Float) : Float
         {
             switch(hopt) {
-            case HO_AIM: base = _object.getAimingAngle(_target, fx, fy); break; // based on the angle to the target
-            case HO_ABS:                                                        // based on the angle in the absolute coordination
-            case HO_FIX: base = 0;                                       break; // based on the fixed angle
-            case HO_REL: base = _object.angleOnStage;                    break; // based on the angle of this object
-            case HO_PAR: base = _object.angleParentOnStage;              break; // based on the angle of the parent object
-            case HO_VEL: base = _object.angleVelocity;                   break; // based on the angle of velocity
-            case HO_SEQ:                                                 break; // sequencial do nothing
+            case HO_AIM:  // based on the angle to the target
+                base = _object.getAimingAngle(_target, fx, fy);
+            case HO_ABS:  // based on the angle in the absolute coordination
+                base = 0;
+            case HO_FIX:  // based on the fixed angle
+                base = 0;
+            case HO_REL:  // based on the angle of this object
+                base = _object.angleOnStage;
+            case HO_PAR:  // based on the angle of the parent object
+                base = _object.angleParentOnStage;
+            case HO_VEL:  // based on the angle of velocity
+                base = _object.angleVelocity;
+            case HO_SEQ:  // sequencial do nothing
             default:
                 throw new Error("BUG!! unknown error in CMLFiber._getAngle()"); // ???
             }
@@ -534,18 +569,18 @@ package org.si.cml {
         
         // return angle for rotation command(r, rc, cd). HO_AIM is aiming angle from the object.
         /** @private */ 
-        _cml_fiber_internal function _getAngleForRotationCommand() : Number
+        public function _getAngleForRotationCommand() : Float
         {
             switch(hopt) {
             case HO_AIM: return _object.getAimingAngle(_target) + hang;  // based on the angle to the target
-            case HO_ABS:                                                 // based on the angle in the absolute coordination
+            case HO_ABS: return hang;                                    // based on the angle in the absolute coordination
             case HO_FIX: return hang;                                    // based on the fixed angle
             case HO_REL: return _object.angleOnStage + hang;             // based on the angle of this object
             case HO_PAR: return _object.angleParentOnStage + hang;       // based on the angle of the parent object
             case HO_VEL: return _object.angleVelocity + hang;            // based on the angle of velocity
             case HO_SEQ: return _object.angleOnStage + hang * chgt;      // sequencial
             default:
-                throw new Error("BUG!! unknown error in CMLFiber._getAngle()"); // ???
+                throw new Error("BUG!! unknown error in CMLFiber._getAngleForRotationCommand()"); // ???
             }
             return 0;
         }
@@ -553,7 +588,7 @@ package org.si.cml {
         
         // rotate object in minimum rotation (call from CMLState.r())
         /** @private */ 
-        _cml_fiber_internal function _isShortestRotation() : Boolean
+        public function _isShortestRotation() : Bool
         {
             return (hopt==HO_AIM || hopt==HO_VEL || hopt==HO_FIX);
         }
@@ -567,53 +602,62 @@ package org.si.cml {
         static private var _rootFiber :CMLFiber = new CMLFiber();   // root fiber of active fibers
 
         /** @private destroy all */
-        static _cml_fiber_internal function _deatroyAll() : void
+        static public function _destroyAll() : Void
         {
             var activeFibers:CMLList = _rootFiber._listChild;
             if (activeFibers.isEmpty()) return;
             
             var elem    :CMLListElem;
             var elem_end:CMLListElem = activeFibers.end;
-            for (elem=activeFibers.begin; elem!=elem_end;) {
+            elem=activeFibers.begin;
+            while (elem!=elem_end) {
                 var nextElem:CMLListElem = elem.next;
-                CMLFiber(elem)._finalize();
-                elem = nextElem 
+                cast(elem,CMLFiber)._finalize();
+                elem = nextElem;
             }
         }
         
 
         // 1 frame execution for all fibers
         /** @private */ 
-        static _cml_fiber_internal function _onUpdate() : void
+        static public function _onUpdateAll() : Void
         {
             var activeFibers:CMLList = _rootFiber._listChild;
             if (activeFibers.isEmpty()) return;
             
             var elem    :CMLListElem;
             var elem_end:CMLListElem = activeFibers.end;
-            for (elem=activeFibers.begin; elem!=elem_end;) {
-                elem = CMLFiber(elem)._onUpdate();
+            
+            elem=activeFibers.begin; 
+            while (elem!=elem_end) {
+                elem = cast(elem,CMLFiber)._onUpdate();
             }
         }
         
         
         // new fiber
         /** call only from CMLObject.execute() @private */ 
-        static _cml_fiber_internal function _newRootFiber(obj:CMLObject, seq:CMLSequence, args_:Array, invt_:uint) : CMLFiber
+        static public function _newRootFiber(obj:CMLObject, seq:CMLSequence, args_:Array<Dynamic>, invt_:Int) : CMLFiber
         {
             if (seq.isEmpty) return null;
-            var fbr:CMLFiber = CMLFiber(_freeFibers.pop() || new CMLFiber());
+            var fbr:CMLFiber = cast(_freeFibers.pop(),CMLFiber);
+            if (fbr == null) {
+                fbr = new CMLFiber();
+            }
             fbr.insert_before(_rootFiber._firstDest);                   // child of root
             fbr._initialize(_rootFiber, obj, seq, 0, invt_, args_);     // the generation is counted from root
             return fbr;
         }
 
         /** call only from the '@' command (CMLState._fiber()) @private */ 
-        _cml_fiber_internal function _newChildFiber(seq:CMLSequence, id:int, invt_:uint, args_:Array, copyParam:Boolean) : CMLFiber
+        public function _newChildFiber(seq:CMLSequence, id:Int, invt_:Int, args_:Array<Dynamic>, copyParam:Bool) : CMLFiber
         {
-            if (id != ID_NOT_SPECIFYED) destroyChild(id);                   // destroy old fiber, when id is obtained
+            if (id != ID_NOT_SPECIFIED) destroyChild(id);                   // destroy old fiber, when id is obtained
             if (seq.isEmpty) return null;
-            var fbr:CMLFiber = CMLFiber(_freeFibers.pop() || new CMLFiber());
+            var fbr:CMLFiber = cast(_freeFibers.pop(),CMLFiber);
+            if (fbr == null) {
+                fbr = new CMLFiber();
+            }
             fbr.insert_before(_firstDest);                                  // child of this
             if (!fbr._initialize(this, _object, seq, id, invt_, args_)) {   // the generation is counted from root
                 throw new Error("CML Exection error. The '@' command calls depper than stac limit.");
@@ -623,15 +667,20 @@ package org.si.cml {
         }
         
         /** call only from the '@ko' command (CMLState._fiber_destruction()) @private */
-        _cml_fiber_internal function _newDestFiber(seq:CMLSequence, id:int, invt_:uint, args_:Array) : CMLFiber
+        public function _newDestFiber(seq:CMLSequence, id:Int, invt_:Int, args_:Array<Dynamic>) : CMLFiber
         {
             _destroyDestFiber(id);                                          // destroy old fiber
             
             if (seq.isEmpty) return null;
-            var fbr:CMLFiber = CMLFiber(_freeFibers.pop() || new CMLFiber());
+            var fbr:CMLFiber = cast(_freeFibers.pop(),CMLFiber);
+            if (fbr == null) {
+                fbr = new CMLFiber();
+            }
             // set destruction sequence
-            fbr._stateWaitDest = fbr._stateWaitDest || CMLSequence.newWaitDestuctionSequence();
-            CMLState(fbr._stateWaitDest.next).jump = seq;
+            if (fbr._stateWaitDest == null) {
+                fbr._stateWaitDest = CMLSequence.newWaitDestuctionSequence();
+            }
+            cast(fbr._stateWaitDest.next,CMLState).jump = seq;
             
             fbr.insert_before(_firstDest);                                  // child of this
             _firstDest = fbr;                                               // overwrite first destruction fiber
@@ -642,10 +691,13 @@ package org.si.cml {
         }
 
         /** call from the 'n', 'f' or '@o' command (search in CMLState) @private */ 
-        _cml_fiber_internal function _newObjectFiber(obj:CMLObject, seq:CMLSequence, invt_:uint, args_:Array) : CMLFiber
+        public function _newObjectFiber(obj:CMLObject, seq:CMLSequence, invt_:Int, args_:Array<Dynamic>) : CMLFiber
         {
             if (seq.isEmpty) return null;
-            var fbr:CMLFiber = CMLFiber(_freeFibers.pop() || new CMLFiber());
+            var fbr:CMLFiber = cast(_freeFibers.pop(),CMLFiber);
+            if (fbr == null) {
+                fbr = new CMLFiber();
+            }
             fbr.insert_before(_rootFiber._firstDest);                       // child of root
             if (!fbr._initialize(this, obj, seq, 0, invt_, args_)) {        // the generation is counted from this
                 throw new Error("CML Exection error. The 'n', 'f' or '@o' command calls depper than stac limit.");
@@ -656,16 +708,17 @@ package org.si.cml {
         
         // destroy all fibers
         /** call from CMLObject.halt() @private */ 
-        static _cml_fiber_internal function _destroyAllFibers(obj:CMLObject) : void
+        static public function _destroyAllFibers(obj:CMLObject) : Void
         {
             var fibers  :CMLList = _rootFiber._listChild,
                 elem    :CMLListElem,
                 elem_end:CMLListElem = fibers.end;
-            for (elem=fibers.begin; elem!=elem_end;) {
-                elem = CMLFiber(elem)._destroyByObject(obj);
+            elem=fibers.begin;
+            while (elem!=elem_end) {
+                elem = cast(elem,CMLFiber)._destroyByObject(obj);
             }
         }
     }
-}
+
 
 

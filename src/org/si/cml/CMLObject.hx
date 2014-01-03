@@ -5,26 +5,25 @@
 //----------------------------------------------------------------------------------------------------
 
 
-package org.si.cml {
-    import flash.geom.Point;
-    import org.si.cml.core.*;
-    import org.si.cml.namespaces._cml_internal;
-    import org.si.cml.namespaces._cml_fiber_internal;
+package org.si.cml;
+
+import flash.geom.Point;
+import org.si.cml.core.*;
+import flash.errors.Error;
     
-    
-    /** <b>Basic class for all objects.</b>
-     * @see CMLObject#initialize()
-     * @see CMLObject#update()
-     * @see CMLObject#setAsDefaultTarget()
-     * @see CMLObject#execute()
-     * @see CMLObject#create()
-     * @see CMLObject#root
-     * @see CMLSequence
-     * @see CMLFiber
-@example 0) All classes of an object are an extension of CMLObject.<br/>
-Override callback functions onCreate(), onDestroy(), onUpdate(), onNewObject() and onFireObject().
-<listing version="3.0">
-// Enemy class
+/** <b>Basic class for all objects.</b>
+ * @see CMLObject#initialize()
+ * @see CMLObject#update()
+ * @see CMLObject#setAsDefaultTarget()
+ * @see CMLObject#execute()
+ * @see CMLObject#create()
+ * @see CMLObject#root
+ * @see CMLSequence
+ * @see CMLFiber
+ @example 0) All classes of an object are an extension of CMLObject.<br/>
+ Override callback functions onCreate(), onDestroy(), onUpdate(), onNewObject() and onFireObject().
+ <listing version="3.0">
+ // Enemy class
 class Enemy extends CMLObject
 {
     ...
@@ -85,7 +84,7 @@ class Shot extends CMLObject
     ...
 }
 </listing>
-@example 1) Call the CMLObject.initialize() function first of all. 
+    @example 1) Call the CMLObject.initialize() function first of all. 
 <listing version="3.0">
 // 1st argument specifies scrolling direction (set true for vertical, false for horizontal).
 CMLObject.initialize(true);
@@ -93,7 +92,7 @@ CMLObject.initialize(true);
 @example 2) Create player object and marking it as "default target".
 <listing version="3.0">
 var player:CMLObject = new Player();    // Player class is your extention of CMLObject.
-player.setAsDefaultTarget();            // Default target is the object to fire.
+player.setAsDefaultTarget();            // Default target is the object to fire at.
 </listing>
 @example 3) Create a new CMLSequence from cannonML or bulletML, and call create() and execute().
 <listing version="3.0">
@@ -101,410 +100,455 @@ player.setAsDefaultTarget();            // Default target is the object to fire.
 var stageSequence:CMLSequence = new CMLSequence(String or XML);
 
  ...
-
-var root:Enemy = new Enemy();   // create one enemy as "root enemy" (usually transparent)
-root.create(x, y);              // Create root enemy on the cml field.
-root.execute(stageSequence);    // Execute stage sequence on root enemy.
+ 
+ var root:Enemy = new Enemy();   // create one enemy as "root enemy" (usually transparent)
+ root.create(x, y);              // Create root enemy on the cml field.
+ root.execute(stageSequence);    // Execute stage sequence on root enemy.
+ </listing>
+ @example 4) Call CMLObject.frameUpdate() once for each frame.
+ <listing version="3.0">
+ addEventListener(Event.ENTER_FRAME, _onEnterFrame);
+ 
+ function _onEnterFrame(event:Event) : void {
+     CMLObject.frameUpdate();
+ }
 </listing>
-@example 4) Call CMLObject.update() once for each frame.
-<listing version="3.0">
-addEventListener(Event.ENTER_FRAME, _onEnterFrame);
-
-function _onEnterFrame(event:Event) : void {
-    CMLObject.update();
-}
-</listing>
-     */    
-    public class CMLObject extends CMLListElem
-    {
-    // namespace
-    //------------------------------------------------------------
-        use namespace _cml_internal;
-        
-        
+*/    
+    
+class CMLObject extends CMLListElem
+{
+    static private var sin:CMLSinTable;
+    
     // public constant values
     //------------------------------------------------------------
-        /** @private Flag for parts motions. */
-        static protected const MT_PART_FLAG:uint = 8;
-        /** @private Filter for parts motions. */
-        static protected const MT_PART_FILTER:uint = MT_PART_FLAG - 1;
-        
-        // enum for motion
-        /** Number for CMLObject.motion_type, Linear motion. */
-        static public const MT_CONST:uint    = 0;
-        /** Number for CMLObject.motion_type, Accelarating motion. */
-        static public const MT_ACCEL:uint    = 1;
-        /** Number for CMLObject.motion_type, 3D-Bezier interpolating motion. */
-        static public const MT_INTERPOL:uint = 2;
-        /** Number for CMLObject.motion_type, BulletML compatible motion. */
-        static public const MT_BULLETML:uint = 3;
-        /** Number for CMLObject.motion_type, Gravity motion. */
-        static public const MT_GRAVITY:uint  = 4;
-        /** Number for CMLObject.motion_type, Linear motion of parts. */
-        static public const MT_PART_CONST:uint = MT_CONST | MT_PART_FLAG;
-        /** Number for CMLObject.motion_type, Accelarating motion of parts. */
-        static public const MT_PART_ACCEL:uint = MT_ACCEL | MT_PART_FLAG;
-        /** Number for CMLObject.motion_type, 3D-Bezier interpolating motion of parts. */
-        static public const MT_PART_INTERPOL:uint = MT_INTERPOL | MT_PART_FLAG;
-        /** Number for CMLObject.motion_type, BulletML compatible motion of parts. */
-        static public const MT_PART_BULLETML:uint = MT_BULLETML | MT_PART_FLAG;
-
-
-
+    /** @private Flag for parts motions. */
+    static public inline var MT_PART_FLAG:Int = 8;
+    /** @private Filter for parts motions. */
+    static public inline var MT_PART_FILTER:Int = MT_PART_FLAG - 1;
+    
+    // enum for motion
+    /** Number for CMLObject.motion_type, Linear motion. */
+    static public inline var MT_CONST:Int    = 0;
+    /** Number for CMLObject.motion_type, Accelarating motion. */
+    static public inline var MT_ACCEL:Int    = 1;
+    /** Number for CMLObject.motion_type, 3D-Bezier interpolating motion. */
+    static public inline var MT_INTERPOL:Int = 2;
+    /** Number for CMLObject.motion_type, BulletML compatible motion. */
+    static public inline var MT_BULLETML:Int = 3;
+    /** Number for CMLObject.motion_type, Gravity motion. */
+    static public inline var MT_GRAVITY:Int  = 4;
+    /** Number for CMLObject.motion_type, Linear motion of parts. */
+    static public inline var MT_PART_CONST:Int = MT_CONST | MT_PART_FLAG;
+    /** Number for CMLObject.motion_type, Accelarating motion of parts. */
+    static public inline var MT_PART_ACCEL:Int = MT_ACCEL | MT_PART_FLAG;
+    /** Number for CMLObject.motion_type, 3D-Bezier interpolating motion of parts. */
+    static public inline var MT_PART_INTERPOL:Int = MT_INTERPOL | MT_PART_FLAG;
+    /** Number for CMLObject.motion_type, BulletML compatible motion of parts. */
+    static public inline var MT_PART_BULLETML:Int = MT_BULLETML | MT_PART_FLAG;
+    
+    
+    
     // public variables
     //------------------------------------------------------------
-        /** You can rewrite this for your own purpose. */
-        public var actor:* = this;
-
-        /** X value of position. */
-        public var x:Number = 0;
-        /** Y value of position. */
-        public var y:Number = 0;
-        /** X value of velocity. */
-        public var vx:Number = 0;
-        /** Y value of velocity. */
-        public var vy:Number = 0;
-
-
-
-
+    /** You can rewrite this for your own purpose. */
+    public var actor:CMLObject = null;
+    
+    /** X value of position. */
+    public var x:Float = 0;
+    /** Y value of position. */
+    public var y:Float = 0;
+    /** X value of velocity. */
+    public var vx:Float = 0;
+    /** Y value of velocity. */
+    public var vy:Float = 0;
+    
+    
+    
+    
     // public properties
     //------------------------------------------------------------
-        // static properties
-        /** root object is the default parent of all CMLObjects that are created with the argument of parent=null. */
-        static public function get root():CMLObject { return _root; }
-        
-        /** Scrolling angle (vertical=-90, horizontal=180). */
-        static public function get scrollAngle() : Number { return _root._scrollAngle; }
-        
-        /** Flag for scrolling direction (vertical=1, horizontal=0). */
-        static public function get vertical() : int { return (_root._scrollAngle==-90) ? 1 : 0; }
-        static public function set vertical(v:int) : void { _root._scrollAngle = (v) ? -90 : 180; }
-        
-        /** Value of (frame rate to calculate speed) / (screen frame rate). */
-        static public function get frameRateRatio() : Number { return CMLState.speedRatio; }
-        static public function set frameRateRatio(n:Number) : void { CMLState.speedRatio = n; }
-        
-        /** Function for "$?/$??" variable, The type is function():Number. @default Math.random() */
-        static public function get funcRand() : Function { return _funcRand; }
-        static public function set funcRand(func:Function) : void { _funcRand = func; }
-
-        /** Variable for "$r" */
-        static public function get globalRank() : Number { return _globalRank[0]; }
-        static public function set globalRank(r:Number) : void {
-            _globalRank[0] = (r<_globalRankRangeMin) ? _globalRankRangeMin : (r>_globalRankRangeMax) ? _globalRankRangeMax : r;
+    // static properties
+    /** root object is the default parent of all CMLObjects that are created with the argument of parent=null.*/
+    static public var root(get,null) : CMLObject;
+    static public function get_root():CMLObject { return _root; }
+    
+    /** Scrolling angle (vertical=-90, horizontal=180). */
+    static public var scrollAngle(get,null) : Float;
+    static public function get_scrollAngle() : Float { return _root._scrollAngle; }
+    
+    /** Flag for scrolling direction (vertical=1, horizontal=0). */
+    static public var vertical(get,set) : Int;
+    static public function get_vertical() : Int { return (_root._scrollAngle==-90) ? 1 : 0; }
+    static public function set_vertical(v:Int) : Int { _root._scrollAngle = (v == 0) ? 180 : -90; return (_root._scrollAngle==-90) ? 1 : 0;}
+    
+    /** Value of (frame rate to calculate speed) / (screen frame rate). */
+    static public var frameRateRatio(get,set) : Float;
+    static public function get_frameRateRatio() : Float { return CMLState.speedRatio; }
+    static public function set_frameRateRatio(n:Float) : Float { CMLState.speedRatio = n; return CMLState.speedRatio;}
+    
+    /** Function for "$?/$??" variable, The type is function():Float. @default Math.random() */
+    static public var funcRand(get,set) : Void -> Float;
+    static public function get_funcRand() : Void -> Float { return _funcRand; }
+    static public function set_funcRand(func: Void -> Float) : Void -> Float { _funcRand = func; return _funcRand;}
+    
+    /** Variable for "$r" */
+    static public var globalRank(get,set) : Float;
+    static public function get_globalRank() : Float { return _globalRank[0]; }
+    static public function set_globalRank(r:Float) : Float {
+        _globalRank[0] = (r<_globalRankRangeMin) ? _globalRankRangeMin : (r>_globalRankRangeMax) ? _globalRankRangeMax : r;
+        return _globalRank[0];
+    }
+    
+    // common properties
+    /** Construction ID, this value changes when the object is destroyed.
+     * @example If you want to know the object is available or not, check the id.
+     <listing version="3.0">
+     target_object_id = target_object.id;        // keep the target's id value.
+     ...
+     if (target_object_id != target_object.id) { // if the id value is different,
+     target_object = null;                   // target object was destroyed.
+     }
+     </listing>
+    */
+    public var id(get,null) : Int;
+    public function get_id() : Int { return _id; }
+    
+    /** The CMLObject that creates this object. Returns root when the parent was destroyed. */
+    public var parent(get,null) : CMLObject;
+    public function get_parent() : CMLObject {
+        if (_parent._id != _parent_id) {
+            _parent = _root;
+            _parent_id = _parent._id;
+            _access_id = ID_NOT_SPECIFIED;
         }
-        
-        // common properties
-        /** Construction ID, this value changes when the object is destroyed.
-         * @example If you want to know the object is available or not, check the id.
-<listing version="3.0">
-target_object_id = target_object.id;        // keep the target's id value.
-...
-if (target_object_id != target_object.id) { // if the id value is different,
-    target_object = null;                   // target object was destroyed.
-}
-</listing>
-         */
-        public function get id() : uint { return _id; }
-        
-        /** The CMLObject that creates this object. Returns root when the parent was destroyed. */
-        public function get parent() : CMLObject {
-            if (_parent._id != _parent_id) {
-                _parent = _root;
-                _parent_id = _parent._id;
-                _access_id = ID_NOT_SPECIFYED;
-            }
-            return _parent;
+        return _parent;
+    }
+    
+    
+    /** Motion type. 
+     * @see CMLObject#MT_CONST
+     * @see CMLObject#MT_ACCEL
+     * @see CMLObject#MT_INTERPOL
+     * @see CMLObject#MT_BULLETML
+     * @see CMLObject#MT_GRAVITY
+     */
+    public var motion_type(get,null) : Int;
+    public function get_motion_type() : Int  { return _motion_type; }
+    
+    /** Is this object on stage ? */
+    public var isActive(get,null) : Bool;
+    public function get_isActive() : Bool { return (_parent != null); }
+    
+    /** Is this object a part of its parent ? The part object's position is relative to parent's position. */
+    public var isPart(get,null) : Bool;
+    public function get_isPart() : Bool { return ((_motion_type & MT_PART_FLAG) == MT_PART_FLAG); }
+    
+    /** Does this object have another object as a part ? */
+    public var hasParts(get,null) : Bool;
+    public function get_hasParts() : Bool { return (_partChildren.length > 0); }
+    
+    /** You can define the "$r" value for each object by overriding this property, Ussualy returns CMLObject.globalRank. @see CMLObject#globalRank */
+    public var rank(get,set) : Float;
+    public function get_rank() : Float { return globalRank; }
+    public function set_rank(r:Float) : Float { globalRank = r; return globalRank;}
+    
+    /** Destruction status. You can refer the argument of destroy() or the '@ko' command. Returns -1 when the object isn't destroyed.
+     *  @see CMLObject#onDestroy()
+     *  @see CMLObject#destroy()
+     *  @see CMLObject#destroyAll()
+     */
+    public var destructionStatus(get,null) : Int;
+    public function get_destructionStatus() : Int { return _destructionStatus; }
+    
+    
+    /** The x value of position parent related */
+    public var relatedX(get,null) : Float;
+    public function get_relatedX() : Float { return ((_motion_type & MT_PART_FLAG) != 0) ? _rx : x; }
+    /** The y value of position parent related */
+    public var relatedY(get,null) : Float;
+    public function get_relatedY() : Float { return ((_motion_type & MT_PART_FLAG) != 0) ? _ry : y; }
+    
+    
+    // velocity
+    /** Absolute value of velocity. */
+    public var velocity(get,set) : Float;
+    public function get_velocity() : Float { return ((_motion_type & MT_PART_FILTER) == MT_BULLETML) ? _ax : (Math.sqrt(vx*vx+vy*vy)); }
+    public function set_velocity(vel:Float) : Float {
+        if ((_motion_type & MT_PART_FILTER) == MT_BULLETML) {
+            _ax = vel;
+            return _ax;
+        } else {
+            var r:Float = vel/velocity;
+            vx *= r;
+            vy *= r;
+            return Math.sqrt(vx*vx+vy*vy);
         }
-        
-        
-        /** Motion type. 
-         * @see CMLObject#MT_CONST
-         * @see CMLObject#MT_ACCEL
-         * @see CMLObject#MT_INTERPOL
-         * @see CMLObject#MT_BULLETML
-         * @see CMLObject#MT_GRAVITY
-         */
-        public function get motion_type() : uint  { return _motion_type; }
-        
-        /** Is this object on stage ? */
-        public function get isActive() : Boolean { return (_parent != null); }
-        
-        /** Is this object a part of its parent ? The part object's position is relative to parent's position. */
-        public function get isPart() : Boolean { return Boolean(_motion_type & MT_PART_FLAG); }
-        
-        /** Does this object have another object as a part ? */
-        public function get hasParts() : Boolean { return (!_partChildren.isEmpty); }
-        
-        /** You can define the "$r" value for each object by overriding this property, Ussualy returns CMLObject.globalRank. @see CMLObject#globalRank */
-        public function get rank() : Number { return globalRank; }
-        public function set rank(r:Number) : void { globalRank = r; }
-
-        /** Destruction status. You can refer the argument of destroy() or the '@ko' command. Returns -1 when the object isn't destroyed.
-         *  @see CMLObject#onDestroy()
-         *  @see CMLObject#destroy()
-         *  @see CMLObject#destroyAll()
-         */
-        public function get destructionStatus() : int { return _destructionStatus; }
-
-
-        /** The x value of position parent related */
-        public function get relatedX() : Number { return (_motion_type & MT_PART_FLAG) ? _rx : x; }
-        /** The y value of position parent related */
-        public function get relatedY() : Number { return (_motion_type & MT_PART_FLAG) ? _ry : y; }
-
-
-        // velocity
-        /** Absolute value of velocity. */
-        public function get velocity() : Number { return ((_motion_type & MT_PART_FILTER) == MT_BULLETML) ? _ax : (Math.sqrt(vx*vx+vy*vy)); }
-        public function set velocity(vel:Number) : void {
-            if ((_motion_type & MT_PART_FILTER) == MT_BULLETML) {
-                _ax = vel; 
-            } else {
-                var r:Number = vel/velocity;
-                vx *= r;
-                vy *= r;
-            }
-        }
-
-
-        // angles
-        /** Angle of this object, scrolling direction is 0 degree. */
-        public function get angle()                  : Number { return ((_motion_type & MT_PART_FLAG) ? (_head_offset + _parent.angleOnStage) : (_head_offset)) + _head + _root._scrollAngle; }
-        public function set angle(ang:Number)        : void   { _head = ang - ((_motion_type & MT_PART_FLAG) ? (_head_offset + _parent.angleOnStage) : (_head_offset)) - _root._scrollAngle; }
-        /** Angle of this object, The direction(1,0) is 0 degree. */
-        public function get angleOnStage()           : Number { return ((_motion_type & MT_PART_FLAG) ? (_head_offset + _parent.angleOnStage) : (_head_offset)) + _head; }
-        public function set angleOnStage(ang:Number) : void   { _head = ang - ((_motion_type & MT_PART_FLAG) ? (_head_offset + _parent.angleOnStage) : (_head_offset)); }
-        /** Angle of this parent object, scrolling direction is 0 degree. */
-        public function get angleParentOnStage()     : Number { return ((_motion_type & MT_PART_FLAG) ? (_head_offset + _parent.angleOnStage) : (_head_offset)); }
-        /** Calculate direction of position from origin. */
-        public function get anglePosition() : Number { return ((_motion_type & MT_PART_FLAG) ? (Math.atan2(_ry, _rx)) : (Math.atan2(y, x))) * 57.29577951308232 - _root._scrollAngle; }
-        /** Calculate direction of velocity. */
-        public function get angleVelocity() : Number { return ((_motion_type & MT_PART_FILTER) == MT_BULLETML) ? (angleOnStage) : (Math.atan2(vy, vx)*57.29577951308232 - _root._scrollAngle); }
-        /** Calculate direction of accelaration. */
-        public function get angleAccel()    : Number { return ((_motion_type & MT_PART_FILTER) == MT_BULLETML) ? (angleOnStage) : (Math.atan2(_ay, _ax)*57.29577951308232 - _root._scrollAngle); }
-
-
-
-
+    }
+    
+    
+    // angles
+    /** Angle of this object, scrolling direction is 0 degree. */
+    public var angle(get,set) : Float;
+    public function get_angle() : Float { return (((_motion_type & MT_PART_FLAG) != 0) ? (_head_offset + _parent.angleOnStage) : (_head_offset)) + _head + _root._scrollAngle; }
+    public function set_angle(ang:Float) : Float   { _head = ang - (((_motion_type & MT_PART_FLAG) != 0) ? (_head_offset + _parent.angleOnStage) : (_head_offset)) - _root._scrollAngle; return _head;}
+    
+    /** Angle of this object, The direction(1,0) is 0 degree. */
+    public var angleOnStage(get,set) : Float;
+    public function get_angleOnStage() : Float { return (((_motion_type & MT_PART_FLAG) != 0) ? (_head_offset + _parent.angleOnStage) : (_head_offset)) + _head; }
+    public function set_angleOnStage(ang:Float) : Float   { _head = ang - (((_motion_type & MT_PART_FLAG) != 0)? (_head_offset + _parent.angleOnStage) : (_head_offset)); return _head;}
+    
+    /** Angle of this parent object, scrolling direction is 0 degree. */
+    public var angleParentOnStage(get,null) : Float;
+    public function get_angleParentOnStage() : Float { return (((_motion_type & MT_PART_FLAG) != 0) ? (_head_offset + _parent.angleOnStage) : (_head_offset)); }
+    
+    /** Calculate direction of position from origin. */
+    public var anglePosition(get,null) : Float;
+    public function get_anglePosition() : Float { return (((_motion_type & MT_PART_FLAG) != 0) ? (Math.atan2(_ry, _rx)) : (Math.atan2(y, x))) * 57.29577951308232 - _root._scrollAngle; }
+    
+    /** Calculate direction of velocity. */
+    public var angleVelocity(get,null) : Float;
+    public function get_angleVelocity() : Float { return ((_motion_type & MT_PART_FILTER) == MT_BULLETML) ? (angleOnStage) : (Math.atan2(vy, vx)*57.29577951308232 - _root._scrollAngle); }
+    
+    /** Calculate direction of accelaration. */
+    public var angleAccel(get,null) : Float;
+    public function get_angleAccel() : Float { return ((_motion_type & MT_PART_FILTER) == MT_BULLETML) ? (angleOnStage) : (Math.atan2(_ay, _ax)*57.29577951308232 - _root._scrollAngle); }
+    
+    
+    
+    
     // private variables
     //------------------------------------------------------------
-        // statics
-        static private  var _activeObjects:CMLList = new CMLList();     // active object list
-        static private  var _root:CMLRoot = null;                       // root object instance
-        static private  var _funcRand:Function = Math.random;           // random function
-        static private  var _globalRankRangeMin:Number = 0;             // the range of globalRank
-        static private  var _globalRankRangeMax:Number = 1;             // the range of globalRank
-        /** @private */
-        static _cml_internal var _globalRank:Array = new Array(10);     // array of globalRank
-        
-
-        // common parameters
-        private var _id:uint = 0;                       // construction id
-        private var _parent:CMLObject = null;           // parent object
-        private var _parent_id:uint = 0;                // parent object id
-        private var _access_id:int = ID_NOT_SPECIFYED;  // access id
-        private var _destructionStatus:int = -1;        // destruction status
-        
-        private var _IDedChildren:Array = [];   // children list that has access id
-        private var _partChildren:Array = [];   // children list that is part of this
-        
-        // motion parameters
-        private var _rx:Number = 0;       // relative position
-        private var _ry:Number = 0;
-        private var _ax:Number = 0;       // accelaration
-        private var _ay:Number = 0;
-        private var _bx:Number = 0;       // differential of accelaration
-        private var _by:Number = 0;
-        private var _ac:int    = 0;       // accelaration counter
-        private var _motion_type:uint = MT_CONST;  // motion type
-        
-        // posture
-        private var _head:Number = 0;           // head angle
-        private var _head_offset:Number = 0;    // head angle offset
-
-        // rotation
-        private var _roti:interpolation = new interpolation();    // rotation interpolation
-        private var _rott:Number = 0;                             // rotation parameter
-        private var _rotd:Number = 0;                             // rotation parameter increament
-
-        // enum for relation
-        static private const NO_RELATION:uint = 0;
-        static private const REL_ATTRACT:uint = 1;
-        
-        /** @private */
-        static _cml_internal const ID_NOT_SPECIFYED:int = 0;
-
-
-
-
+    // statics
+    static private  var _activeObjects:CMLList = new CMLList();     // active object list
+    static private  var _root:CMLRoot = null;                       // root object instance
+    static private  var _funcRand:Void -> Float = Math.random;      // random function
+    static private  var _globalRankRangeMin:Float = 0;              // the range of globalRank
+    static private  var _globalRankRangeMax:Float = 1;              // the range of globalRank
+    /** @private */
+    static public var _globalRank:Array<Float> = new Array<Float>();       // array of globalRank
+    
+    
+    // common parameters
+    private var _id:Int = 0;                       // construction id
+    private var _parent:CMLObject = null;           // parent object
+    private var _parent_id:Int = 0;                // parent object id
+    private var _access_id:Int;                     // access id
+    private var _destructionStatus:Int = -1;        // destruction status
+    
+    private var _IDedChildren:Array<CMLObject>;   // children list that has access id
+    private var _partChildren:Array<CMLObject>;   // children list that is part of this
+    
+    // motion parameters
+    private var _rx:Float = 0;       // relative position
+    private var _ry:Float = 0;
+    private var _ax:Float = 0;       // accelaration
+    private var _ay:Float = 0;
+    private var _bx:Float = 0;       // differential of accelaration
+    private var _by:Float = 0;
+    private var _ac:Int    = 0;       // accelaration counter
+    private var _motion_type:Int = MT_CONST;  // motion type
+    
+    // posture
+    private var _head:Float = 0;           // head angle
+    private var _head_offset:Float = 0;    // head angle offset
+    
+    // rotation
+    private var _roti:Interpolation;   // rotation interpolation
+    private var _rott:Float = 0;       // rotation parameter
+    private var _rotd:Float = 0;       // rotation parameter increment
+    
+    // enum for relation
+    static private inline var NO_RELATION:Int = 0;
+    static private inline var REL_ATTRACT:Int = 1;
+    
+    /** @private */
+    static private inline var ID_NOT_SPECIFIED:Int = 0;
+    
+    
+    
+    
     // constructor
     //------------------------------------------------------------
-        /** Constructor. */
-        public function CMLObject()
-        {
-            _id = 0;
-            actor = this;
-        }
-
-
-
-
+    /** Constructor. */
+    public function new()
+    {
+        super();
+        _id = 0;
+        actor = this;
+        _IDedChildren = new Array<CMLObject>();
+        _partChildren = new Array<CMLObject>();
+        _access_id = ID_NOT_SPECIFIED;
+        sin = new CMLSinTable();
+        _roti = new Interpolation();
+    }
+    
+    
+    
+    
     // callback functions
     //------------------------------------------------------------
-        /** Callback function on create. Override this to initialize.*/
-        public function onCreate() : void
-        {
-        }
-        
-        
-        /** Callback function on destroy. Override this to finalize.
-         *  @see CMLObject#destroy()
-         *  @see CMLObject#destroyAll()
-         */
-        public function onDestroy() : void
-        {
-        }
-        
-        
-        /** Callback function from CMLObject.update(). This function is called after updating position. Override this to update own parameters.*/
-        public function onUpdate() : void
-        {
-        }
+    /** Callback function on create. Override this to initialize.*/
+    public function onCreate() : Void
+    {
+    }
+    
+    
+    /** Callback function on destroy. Override this to finalize.
+     *  @see CMLObject#destroy()
+     *  @see CMLObject#destroyAll()
+     */
+    public function onDestroy() : Void
+    {
+    }
+    
+    
+    /** Callback function from CMLObject.update(). This function is called after updating position. Override this to update own parameters.*/
+    public function onUpdate() : Void
+    {
+    }
+    
+    
+    /** Statement "n" calls this when it needs. Override this to define the new CMLObject created by "n" command.
+     *  @param args The arguments of sequence.
+     *  @return The new CMLObject created by "n" command. You must not activate(call create()) returning CMLObject.
+     */
+    public function onNewObject(args:Array<Dynamic>) : CMLObject
+    {
+        return null;
+    }
+    
+    
+    /** Statement "f" calls this when it needs. Override this to define the new CMLObject created by "f" command.
+     *  @param args The arguments of sequence.
+     *  @return The new CMLObject created by "n" command. You must not activate(call create()) returning CMLObject.
+     */
+    public function onFireObject(args:Array<Dynamic>) : CMLObject
+    {
+        return null;
+    }
+    
+    
 
-        
-        /** Statement "n" calls this when it needs. Override this to define the new CMLObject created by "n" command.
-         *  @param args The arguments of sequence.
-        *  @return The new CMLObject created by "n" command. You must not activate(call create()) returning CMLObject.
-         */
-        public function onNewObject(args:Array) : CMLObject
-        {
-            return null;
-        }
-
-        
-        /** Statement "f" calls this when it needs. Override this to define the new CMLObject created by "f" command.
-         *  @param args The arguments of sequence.
-         *  @return The new CMLObject created by "n" command. You must not activate(call create()) returning CMLObject.
-         */
-        public function onFireObject(args:Array) : CMLObject
-        {
-            return null;
-        }
-
-
-
-
+    
     // static functions
     //------------------------------------------------------------
-        /** <b>Call this function first of all</b>.
-         *  @param vertical_ Flag of scrolling direction
-         *  @return The root object.
-         */
-        static public function initialize(vertical_:Boolean=true) : CMLObject
-        {
-            if (!_root) _root = new CMLRoot();
-            vertical = int(vertical_);
-            for (var i:int=0; i<_globalRank.length; i++) _globalRank[i] = 0;
-            destroyAll(-1);
-            CMLFiber._cml_fiber_internal::_deatroyAll();
-            _root.create(0, 0, _root).setAsDefaultTarget();
-            return _root;
+    /** <b>Call this function first of all</b>.
+     *  @param vertical_ Flag of scrolling direction
+     *  @return The root object.
+     */
+    static public function initialize(vertical_:Bool=true) : CMLObject
+    {
+        if (_root == null) _root = new CMLRoot();
+        if (vertical_) {
+            vertical = 1;
+        } else {
+            vertical = 0;
         }
-
+        var i:Int;
+        for (i in 0..._globalRank.length) _globalRank[i] = 0;
+        destroyAll(-1);
+        CMLFiber._destroyAll();
+        _root.create(0, 0, _root).setAsDefaultTarget();
+        return _root;
+    }
+    
+    
+    /** <b>Call this function for each frame</b>. This function calls all CMLObject.onUpdate()s. */
+    static public function frameUpdate() : Void
+    {
+        CMLFiber._onUpdateAll();
         
-        /** <b>Call this function for each frame</b>. This function calls all CMLObject.onUpdate()s. */
-        static public function update() : void
-        {
-            CMLFiber._cml_fiber_internal::_onUpdate();
-            
-            if (_activeObjects.isEmpty()) return;
-            
-            var object   :CMLObject, 
-                elem     :CMLListElem = _activeObjects.begin,
-                elem_end :CMLListElem = _activeObjects.end;
-
-            while (elem!=elem_end) {
-                object = CMLObject(elem);
-                elem = elem.next;
-                if (object._destructionStatus >= 0) {
-                    object._finalize();
-                } else {
-                    object.update();
-                    //if (object._destructionStatus >= 0) object._finalize();
-                }
+        if (_activeObjects.isEmpty()) return;
+        
+        var object   :CMLObject, 
+            elem     :CMLListElem = _activeObjects.begin,
+            elem_end :CMLListElem = _activeObjects.end;
+        
+        while (elem!=elem_end) {
+            object = cast(elem,CMLObject);
+            elem = elem.next;
+            if (object._destructionStatus >= 0) {
+                object._finalize();
+            } else {
+                object.update();
+                //if (object._destructionStatus >= 0) object._finalize();
             }
         }
+    }
+    
+    
+    /** Destroy all active objects except for root. This function <b>must not</b> be called from onDestroy().
+     *  @param status A value of the destruction status. This must be greater than or equal to 0. You can refer this by destructionStatus in onDestroy(). 
+     *  @see CMLObject#destructionStatus
+     *  @see CMLObject#onDestroy()
+     */
+    static public function destroyAll(status:Int) : Void
+    {
+        var elem     :CMLListElem;
+        var elem_next:CMLListElem;
+        var elem_end :CMLListElem = _activeObjects.end;
 
-        
-        /** Destroy all active objects except for root. This function <b>must not</b> be called from onDestroy().
-         *  @param status A value of the destruction status. This must be greater than or equal to 0. You can refer this by destructionStatus in onDestroy(). 
-         *  @see CMLObject#destructionStatus
-         *  @see CMLObject#onDestroy()
-         */
-        static public function destroyAll(status:int) : void
-        {
-            var elem     :CMLListElem, elem_next:CMLListElem, 
-                elem_end :CMLListElem = _activeObjects.end;
-            for (elem=_activeObjects.begin; elem!=elem_end; elem=elem_next) {
-                // CMLObject(elem).destroy(_destructionStatus);
-                elem_next= elem.next;
-                CMLObject(elem)._destructionStatus = status;
-                CMLObject(elem)._finalize();
-            }
+        elem=_activeObjects.begin;
+        while (elem!=elem_end) {
+            var obj : CMLObject = cast elem;
+            // CMLObject(elem).destroy(_destructionStatus);
+            elem_next= elem.next;
+            obj._destructionStatus = status;
+            obj._finalize();
+            elem=elem_next;
         }
-
-        
-        /** The return value is from CMLObject.funcRand. Call CMLObject.funcRand internally.
-         *  @return The random number between 0-1. 
-         *  @see CMLObject#funcRand
-         */
-        static public function rand() : Number { return _funcRand(); }
-
-
-        /** Set the range of globalRank. The global rank value is limited in this range. */
-        static public function setGlobalRankRange(min:Number, max:Number) : void
-        {
-            _globalRankRangeMin = min;
-            _globalRankRangeMax = max;
-        }
-
-
-
-
+    }
+    
+    
+    /** The return value is from CMLObject.funcRand. Call CMLObject.funcRand internally.
+     *  @return The random number between 0-1. 
+     *  @see CMLObject#funcRand
+     */
+    static public function rand() : Float { return _funcRand(); }
+    
+    
+    /** Set the range of globalRank. The global rank value is limited in this range. */
+    static public function setGlobalRankRange(min:Float, max:Float) : Void
+    {
+        _globalRankRangeMin = min;
+        _globalRankRangeMax = max;
+    }
+    
+    
+    
+    
     // create / destroy
     //------------------------------------------------------------
-        /** Create new object on the CML stage.
-         *  @param x_         X value of this object on a stage or parent(if its a part of parent).
-         *  @param y_         Y value of this object on a stage or parent(if its a part of parent).
-         *  @param parent_    The instance of parent object. Pass null to set this object as a child of root.
-         *  @param isPart_    True to set this object as a part of parent.
-         *  @param access_id_ Access ID from parent.
-         *  @return this instance.
-         */
-        public function create(x_:Number, y_:Number, parent_:CMLObject=null, isPart_:Boolean=false, access_id_:int=ID_NOT_SPECIFYED) : CMLObject
-        {
-            if (isActive) throw new Error("CMLObject.create() must be called from inactive CMLObject.");
-            _initialize(parent_ || _root, isPart_, access_id_, x_, y_, 0, 0, 0);
-            return this;
-        }
-        
-        
-        /** Destroy this object. The onDestroy() is called when the next CMLObject.update().
-         *  @param status A value of the destruction status. This must be greater than or equal to 0. You can refer this by CMLObject.destructionStatus in onDestroy().
-         *  @see CMLObject#destructionStatus
-         *  @see CMLObject#onDestroy()
-         */
-        public function destroy(status:int) : void
-        {
-            _destructionStatus = (status<0) ? 0 : status;
-        }
-
+    /** Create new object on the CML stage.
+     *  @param x_         X value of this object on a stage or parent(if its a part of parent).
+     *  @param y_         Y value of this object on a stage or parent(if its a part of parent).
+     *  @param parent_    The instance of parent object. Pass null to set this object as a child of root.
+     *  @param isPart_    True to set this object as a part of parent.
+     *  @param access_id_ Access ID from parent.
+     *  @return this instance.
+     */
+    public function create(x_:Float, y_:Float, parent_:CMLObject=null, isPart_:Bool=false, access_id_:Int=ID_NOT_SPECIFIED) : CMLObject
+    {
+        if (isActive) throw new Error("CMLObject.create() must be called from inactive CMLObject.");
+        _initialize((parent_ == null)? _root:parent_, isPart_, access_id_, x_, y_, 0, 0, 0);
+        return this;
+    }
+    
+    
+    /** Destroy this object. The onDestroy() is called when the next CMLObject.update().
+     *  @param status A value of the destruction status. This must be greater than or equal to 0. You can refer this by CMLObject.destructionStatus in onDestroy().
+     *  @see CMLObject#destructionStatus
+     *  @see CMLObject#onDestroy()
+     */
+    public function destroy(status:Int) : Void
+    {
+        _destructionStatus = (status<0) ? 0 : status;
+    }
+    
         
         /** Reset position, velocity, accelaration, interpolation, motion type and rotation.
          */
-        public function reset(x_:Number, y_:Number) : CMLObject
+        public function reset(x_:Float, y_:Float) : CMLObject
         {
             _motion_type = MT_CONST | (_motion_type & MT_PART_FLAG);
             setPosition(x_, y_);
@@ -525,9 +569,9 @@ if (target_object_id != target_object.id) { // if the id value is different,
          *  @param invertFlag The flag to invert execution same as 'm' command.
          *  @return Instance of fiber that execute the sequence.
          */
-        public function execute(seq:CMLSequence, args:Array=null, invertFlag:uint=0) : CMLFiber
+        public function execute(seq:CMLSequence, args:Array<Dynamic>=null, invertFlag:Int=0) : CMLFiber
         {
-            return CMLFiber._cml_fiber_internal::_newRootFiber(this, seq, args, invertFlag);
+            return CMLFiber._newRootFiber(this, seq, args, invertFlag);
         }
         
         
@@ -536,9 +580,9 @@ if (target_object_id != target_object.id) { // if the id value is different,
          *  @see CMLObject#execute()
          *  @see CMLFiber#destroy()
          */
-        public function halt() : void
+        public function halt() : Void
         {
-            CMLFiber._cml_fiber_internal::_destroyAllFibers(this);
+            CMLFiber._destroyAllFibers(this);
         }
 
 
@@ -550,10 +594,10 @@ if (target_object_id != target_object.id) { // if the id value is different,
          * @param tgt Another object to calculate distance.
          * @return Rough distance.
          */
-        public function getDistance(tgt:CMLObject) : Number
+        public function getDistance(tgt:CMLObject) : Float
         {
-            var dx:Number = (x < tgt.x) ? (tgt.x - x) : (x - tgt.x);
-            var dy:Number = (y < tgt.y) ? (tgt.y - y) : (y - tgt.y);
+            var dx:Float = (x < tgt.x) ? (tgt.x - x) : (x - tgt.x);
+            var dy:Float = (y < tgt.y) ? (tgt.y - y) : (y - tgt.y);
             return (dx > dy) ? (dx + dy * 0.2928932188134524) : (dy + dx * 0.2928932188134524);
         }
         
@@ -564,11 +608,12 @@ if (target_object_id != target_object.id) { // if the id value is different,
          * @param offy Y position offset to calculate angle.
          * @return Angle.
          */
-        public function getAimingAngle(target_:CMLObject, offx:Number=0, offy:Number=0) : Number
+        public function getAimingAngle(target_:CMLObject, offx:Float=0, offy:Float=0) : Float
         {            
-            var sang:int = sin.index(angleOnStage), cang:int = sang + sin.cos_shift,
-                absx:Number = x + sin[cang]*offx - sin[sang]*offy,
-                absy:Number = y + sin[sang]*offx + sin[cang]*offy;
+            var sang:Int = sin.index(angleOnStage), cang:Int = sang + sin.cos_shift,
+                absx:Float = x + sin[cang]*offx - sin[sang]*offy,
+                absy:Float = y + sin[sang]*offx + sin[cang]*offy;
+            var ret:Float = Math.atan2(target_.y-absy, target_.x-absx)*57.29577951308232 - _root._scrollAngle;
             return Math.atan2(target_.y-absy, target_.x-absx)*57.29577951308232 - _root._scrollAngle;
         }
         
@@ -579,9 +624,9 @@ if (target_object_id != target_object.id) { // if the id value is different,
          */
         public function transformLocalToGlobal(local:Point) : Point
         {
-            var sang:int = sin.index(angleOnStage), cang:int = sang + sin.cos_shift,
-                glbx:Number = x + sin[cang]*local.x - sin[sang]*local.y,
-                glby:Number = y + sin[sang]*local.x + sin[cang]*local.y;
+            var sang:Int = sin.index(angleOnStage), cang:Int = sang + sin.cos_shift,
+                glbx:Float = x + sin[cang]*local.x - sin[sang]*local.y,
+                glby:Float = y + sin[sang]*local.x + sin[cang]*local.y;
             local.x = glbx;
             local.y = glby;
             return local;
@@ -594,9 +639,9 @@ if (target_object_id != target_object.id) { // if the id value is different,
          */
         public function transformGlobalToLocal(global:Point) : Point
         {
-            var sang:int = sin.index(-angleOnStage), cang:int = sang + sin.cos_shift,
-                locx:Number = sin[cang]*(global.x - x) - sin[sang]*(global.y - y),
-                locy:Number = sin[sang]*(global.x - x) + sin[cang]*(global.y - y);
+            var sang:Int = sin.index(-angleOnStage), cang:Int = sang + sin.cos_shift,
+                locx:Float = sin[cang]*(global.x - x) - sin[sang]*(global.y - y),
+                locy:Float = sin[sang]*(global.x - x) + sin[cang]*(global.y - y);
             global.x = locx;
             global.y = locy;
             return global;
@@ -607,7 +652,7 @@ if (target_object_id != target_object.id) { // if the id value is different,
          *  @return The count of child objects with access id.
          *  @see CMLObject#create()
          */
-        public function countAllIDedChildren() : int
+        public function countAllIDedChildren() : Int
         {
             return _IDedChildren.length;
         }
@@ -618,11 +663,11 @@ if (target_object_id != target_object.id) { // if the id value is different,
          *  @return The count of child objects with specifyed id.
          *  @see CMLObject#create()
          */
-        public function countIDedChildren(id:int) : int
+        public function countIDedChildren(id:Int) : Int
         {
-            var count:int=0, obj:CMLObject;
-            for each (obj in _IDedChildren) {
-                count += int(obj._access_id == id);
+            var count:Int=0, obj:CMLObject;
+            for (obj in _IDedChildren) {
+                count += (obj._access_id == id) ? 1 : 0;
             }
             return count;
         }
@@ -638,7 +683,7 @@ if (target_object_id != target_object.id) { // if the id value is different,
          *  @param term_ Frames for tweening with bezier interpolation.
          *  @return this object
          */
-        public function setPosition(x_:Number, y_:Number, term_:int=0) : CMLObject
+        public function setPosition(x_:Float, y_:Float, term_:Int=0) : CMLObject
         {
             if (term_ == 0) {
                 if (_motion_type == MT_GRAVITY) {
@@ -657,8 +702,8 @@ if (target_object_id != target_object.id) { // if the id value is different,
                 }
             } else {
                 // interlopation
-                var t:Number = 1 / term_;
-                var dx:Number, dy:Number;
+                var t:Float = 1 / term_;
+                var dx:Float, dy:Float;
                 if (isPart) {
                     dx = x_ - _rx;
                     dy = y_ - _ry;
@@ -683,14 +728,14 @@ if (target_object_id != target_object.id) { // if the id value is different,
          *  @param term_ Frames for tweening with bezier interpolation.
          *  @return this object
          */
-        public function setVelocity(vx_:Number, vy_:Number, term_:int=0) : CMLObject
+        public function setVelocity(vx_:Float, vy_:Float, term_:Int=0) : CMLObject
         {
             if (term_ == 0) {
                 vx = vx_;
                 vy = vy_;
                 _motion_type = MT_CONST | (_motion_type & MT_PART_FLAG);
             } else {
-                var t:Number = 1 / term_;
+                var t:Float = 1 / term_;
                 if ((_motion_type & MT_PART_FILTER) == MT_INTERPOL) {
                     // interlopation
                     _ax -= vx_ * t * 2;
@@ -717,7 +762,7 @@ if (target_object_id != target_object.id) { // if the id value is different,
          *  @param time_ Frames to stop accelarate. 0 means not to stop.
          *  @return this object
          */
-        public function setAccelaration(ax_:Number, ay_:Number, time_:int=0) : CMLObject
+        public function setAccelaration(ax_:Float, ay_:Float, time_:Int=0) : CMLObject
         {
             _ax = ax_;
             _ay = ay_;
@@ -740,7 +785,7 @@ if (target_object_id != target_object.id) { // if the id value is different,
          *  @param term_ Frames for tweening with bezier interpolation.
          *  @return this object
          */
-        public function setInterpolation(x_:Number, y_:Number, vx_:Number, vy_:Number, term_:int=0) : CMLObject
+        public function setInterpolation(x_:Float, y_:Float, vx_:Float, vy_:Float, term_:Int=0) : CMLObject
         {
             if (term_ == 0) {
                 vx = vx_;
@@ -756,8 +801,8 @@ if (target_object_id != target_object.id) { // if the id value is different,
                 _motion_type = MT_CONST | (_motion_type & MT_PART_FLAG);
             } else {
                 // 3rd dimensional motion
-                var t:Number = 1 / term_;
-                var dx:Number, dy:Number;
+                var t:Float = 1 / term_;
+                var dx:Float, dy:Float;
                 if (isPart) {
                     dx = x_ - _rx;
                     dy = y_ - _ry;
@@ -784,14 +829,14 @@ if (target_object_id != target_object.id) { // if the id value is different,
          *  @param shortest_rot Flag to rotate on shortest rotation.
          *  @return this object
          */
-        public function setChangeDirection(dir:Number, term:int, rmax:Number, shortest_rot:Boolean=true) : CMLObject
+        public function setChangeDirection(dir:Float, term:Int, rmax:Float, shortest_rot:Bool=true) : CMLObject
         {
             if (term == 0) {
                 // set head angle and set velocity to head direction
                 setRotation(dir, 0, 1, 1, shortest_rot);
-                var sang:int = sin.index(angle),
-                    cang:int = sang + sin.cos_shift,
-                    spd:Number = velocity;
+                var sang:Int = sin.index(angle),
+                    cang:Int = sang + sin.cos_shift,
+                    spd:Float = velocity;
                 vx = sin[cang] * spd;
                 vy = sin[sang] * spd;
             } else {
@@ -815,12 +860,12 @@ if (target_object_id != target_object.id) { // if the id value is different,
          *  @param term Frames to change speed.
          *  @return this object
          */
-        public function setChangeSpeed(spd:Number, term:int=0) : CMLObject
+        public function setChangeSpeed(spd:Float, term:Int=0) : CMLObject
         {
             if (term == 0) {
                 // turn velocity vector to head direction
-                var sang:int = sin.index(angle),
-                    cang:int = sang + sin.cos_shift;
+                var sang:Int = sin.index(angle),
+                    cang:Int = sang + sin.cos_shift;
                 vx = sin[cang] * spd;
                 vy = sin[sang] * spd;
             } else {
@@ -848,9 +893,9 @@ if (target_object_id != target_object.id) { // if the id value is different,
          *  @return this object
          *  @see CMLObject#setPosition
          */
-        public function setGravity(atr_a:Number, atr_b:Number, term:int=0) : CMLObject
+        public function setGravity(atr_a:Float, atr_b:Float, term:Int=0) : CMLObject
         {
-            if (_motion_type & MT_PART_FLAG) return this;
+            if ((_motion_type & MT_PART_FLAG) != 0) return this;
             
             if (atr_a == 0 && atr_b == 0) {
                 // stop attraction
@@ -882,14 +927,14 @@ if (target_object_id != target_object.id) { // if the id value is different,
          *  @param isShortestRotation Rotate with shortest rotation or not.
          *  @return this object
          */
-        public function setRotation(end_angle:Number, term:Number=0, start_t:Number=1, end_t:Number=1, isShortestRotation:Boolean=true) : CMLObject
+        public function setRotation(end_angle:Float, term:Float=0, start_t:Float=1, end_t:Float=1, isShortestRotation:Bool=true) : CMLObject
         {
             // calculate shotest rotation
-            var diff:Number;
+            var diff:Float;
             if (isShortestRotation) {
                 _normalizeHead();
                 diff = (end_angle - angleOnStage + 180) * 0.00277777777777777778;
-                diff = (diff-int(diff)) * 360 - 180;
+                diff = (diff-Std.int(diff)) * 360 - 180;
             } else {
                 diff = end_angle - angleOnStage;
             }
@@ -900,7 +945,7 @@ if (target_object_id != target_object.id) { // if the id value is different,
                 _rotd = 0;
             } else {
                 // rotating interpolation
-                _roti.setFergusonCoons(_head, _head+diff, diff*start_t, diff*end_t)
+                _roti.setFergusonCoons(_head, _head+diff, diff*start_t, diff*end_t);
                 _rott = 0;
                 _rotd = 1/term;
             }
@@ -916,17 +961,17 @@ if (target_object_id != target_object.id) { // if the id value is different,
          *  @param isShortestRotation Rotate with shortest rotation or not.
          *  @return this object
          */
-        public function setConstantRotation(end_angle:Number, term:Number=0, rmax:Number=1, isShortestRotation:Boolean=true) : CMLObject
+        public function setConstantRotation(end_angle:Float, term:Float=0, rmax:Float=1, isShortestRotation:Bool=true) : CMLObject
         {
             // rotation max
             rmax *= (term==0) ? 1 : term;
             
             // calculate shotest rotation
-            var diff:Number;
+            var diff:Float;
             if (isShortestRotation) {
                 _normalizeHead();
                 diff = (end_angle - angleOnStage + 180) * 0.00277777777777777778;
-                diff = (diff-int(diff)) * 360 - 180;
+                diff = (diff-Std.int(diff)) * 360 - 180;
             } else {
                 diff = end_angle - angleOnStage;
             }
@@ -955,35 +1000,59 @@ if (target_object_id != target_object.id) { // if the id value is different,
          */
         public function setAsDefaultTarget() : CMLObject
         {
-            CMLFiber._cml_fiber_internal::_defaultTarget = this;
+            CMLFiber._defaultTarget = this;
             return this;
         }
         
         
         /** Change parent. */
-        public function changeParent(parent_:CMLObject=null, isPart_:Boolean=false, access_id_:int=ID_NOT_SPECIFYED) : void
+        public function changeParent(parent_:CMLObject=null, isPart_:Bool=false, access_id_:Int=ID_NOT_SPECIFIED) : Void
         {
+            // refrective funciton
+            function _repush(obj:CMLObject) : Void {
+                var part:CMLObject;
+                obj.remove_from_list();
+                _activeObjects.push(obj);
+                for (part in obj._partChildren) { _repush(part); }
+            }
+
             // check parent availability
             isPart_ = (parent_ != null) && isPart_;
 
             // remove this from a parents IDed children list.
-            if (_access_id != ID_NOT_SPECIFYED) {
-                _parent._IDedChildren.splice(_parent._IDedChildren.indexOf(this), 1);
+            var i: Int = 0;
+            if (_access_id != ID_NOT_SPECIFIED) {
+                for (i in 0..._parent._IDedChildren.length) {
+                    if (_parent._IDedChildren[i] == this) {
+                        break;
+                    }
+                }
+                _parent._IDedChildren.splice(i, 1);
             }
             
             // when this WAS a part object ...
+            i = 0;
             if (isPart) {
+                for (i in 0..._parent._partChildren.length) {
+                    if (_parent._partChildren[i] == this) {
+                        break;
+                    }
+                }
                 // check parents parts
-                _parent._partChildren.splice(_parent._partChildren.indexOf(this), 1);
+                _parent._partChildren.splice(i, 1);
                 // calculate absolute angle
                 _head = _parent.angleOnStage + _head;
             }
 
             // change parameters
-            _parent = parent_ || _root;
+            if (parent_ != null) {
+                _parent = parent_;
+            } else {
+                _parent = _root;
+            }
             _parent_id = _parent._id;
-            _access_id = (parent_) ? access_id_ : ID_NOT_SPECIFYED;
-            if (access_id_ != ID_NOT_SPECIFYED) {
+            _access_id = (parent_ != null) ? access_id_ : ID_NOT_SPECIFIED;
+            if (access_id_ != ID_NOT_SPECIFIED) {
                 _parent._IDedChildren.push(this);
             }
             
@@ -1007,23 +1076,16 @@ if (target_object_id != target_object.id) { // if the id value is different,
                 // change parts flag
                 _motion_type &= MT_PART_FILTER;
             }
-            
-            // refrective funciton
-            function _repush(obj:CMLObject) : void {
-                obj.remove_from_list();
-                _activeObjects.push(obj);
-                for each (var part:CMLObject in obj._partChildren) { _repush(part); }
-            }
         }
         
         
         // calculate the angleOnStage in a range of -180 to 180.
-        private function _normalizeHead() : void
+        private function _normalizeHead() : Void
         {
-            var offset:Number = (_motion_type & MT_PART_FLAG) ? (_head_offset + _parent.angleOnStage) : (_head_offset);
+            var offset:Float = ((_motion_type & MT_PART_FLAG) != 0) ? (_head_offset + _parent.angleOnStage) : (_head_offset);
             _head += 180 - offset;
             _head *= 0.00277777777777777778;
-            _head = (_head-int(_head)) * 360 - 180 + offset;
+            _head = (_head-Std.int(_head)) * 360 - 180 + offset;
         }
         
         
@@ -1032,14 +1094,14 @@ if (target_object_id != target_object.id) { // if the id value is different,
     // execute in each frame when it's necessary
     //------------------------------------------------------------
         /** Calculate absolute position when the isPart is true. 
-         *  The protected function _motion_parts() is a typical usage of this. 
+         *  The public function _motion_parts() is a typical usage of this. 
          */
-        protected function calcAbsPosition() : void
+        public function calcAbsPosition() : Void
         {
-            var parent_angle:Number = angleParentOnStage;
+            var parent_angle:Float = angleParentOnStage;
             if (parent_angle != 0) {
-                var sang:int = sin.index(parent_angle),
-                    cang:int = sang + sin.cos_shift;
+                var sang:Int = sin.index(parent_angle),
+                    cang:Int = sang + sin.cos_shift;
                 x = _parent.x + sin[cang]*_rx - sin[sang]*_ry;
                 y = _parent.y + sin[sang]*_rx + sin[cang]*_ry;
             } else {
@@ -1051,14 +1113,14 @@ if (target_object_id != target_object.id) { // if the id value is different,
 
         /** Calculate parent related position from absolute position.
          */
-        protected function calcRelatedPosition() : void
+        public function calcRelatedPosition() : Void
         {
-            var parent_angle:Number = angleParentOnStage;
+            var parent_angle:Float = angleParentOnStage;
             if (parent_angle != 0) {
-                var sang:int = sin.index(-parent_angle),
-                    cang:int = sang + sin.cos_shift,
-                    dx:Number = x - _parent.x,
-                    dy:Number = y - _parent.y;
+                var sang:Int = sin.index(-parent_angle),
+                    cang:Int = sang + sin.cos_shift,
+                    dx:Float = x - _parent.x,
+                    dy:Float = y - _parent.y;
                 _rx = sin[cang]*dx - sin[sang]*dy;
                 _ry = sin[sang]*dx + sin[cang]*dy;
             } else {
@@ -1069,7 +1131,7 @@ if (target_object_id != target_object.id) { // if the id value is different,
 
 
         /** Rotate haed in 1 frame, if rotd > 0. The _motion() is a typical usage exapmle. @see CMLObject#_motion()*/
-        protected function rotateHead() : void
+        public function rotateHead() : Void
         {
             _rott += _rotd;
             if (_rott >= 1) {
@@ -1089,10 +1151,10 @@ if (target_object_id != target_object.id) { // if the id value is different,
          *  @return The first child object with specifyed id. Return null when the seach was failed.
          *  @see CMLObject#create()
          */
-        public function findChild(id:int) : CMLObject
+        public function findChild(id:Int) : CMLObject
         {
             var obj:CMLObject;
-            for each (obj in _IDedChildren) {
+            for (obj in _IDedChildren) {
                 if (obj._access_id == id) return obj;
             }
             return null;
@@ -1101,15 +1163,15 @@ if (target_object_id != target_object.id) { // if the id value is different,
 
         /** Find all child and callback. <br/>
          *  @param id Access id specifyed in create() or "n*" command.
-         *  @param func The call back function to operate objects. The type is function(obj:CMLObject):Boolean. Stop finding when this returns true.
+         *  @param func The call back function to operate objects. The type is function(obj:CMLObject):Bool. Stop finding when this returns true.
          *  @return The count of the executions of call back function.
          *  @see CMLObject#create()
          */
-        public function findAllChildren(id:int, func:Function) : int
+        public function findAllChildren(id:Int, func:CMLObject->Bool) : Int
         {
-            var count:int = 0,
+            var count:Int = 0,
                 obj:CMLObject;
-            for each (obj in _IDedChildren) {
+            for (obj in _IDedChildren) {
                 if (obj._access_id == id) {
                     ++count;
                     if (func(obj)) break;
@@ -1120,14 +1182,15 @@ if (target_object_id != target_object.id) { // if the id value is different,
 
 
         /** Find all parts and callback. <br/>
-         *  @param func The call back function to operate objects. The type is function(obj:CMLObject):Boolean. Stop finding when this returns true.
+         *  @param func The call back function to operate objects. The type is function(obj:CMLObject):Bool. Stop finding when this returns true.
          *  @return The count of the executions of call back function.
          *  @see CMLObject#create()
          */
-        public function findAllParts(func:Function) : int
+        public function findAllParts(func:CMLObject->Bool) : Int
         {
-            var count:int = 0;
-            for each (var obj:CMLObject in _partChildren) {
+            var count:Int = 0;
+            var obj:CMLObject;
+            for (obj in _partChildren) {
                 ++count;
                 if (func(obj)) break;
             }
@@ -1136,14 +1199,14 @@ if (target_object_id != target_object.id) { // if the id value is different,
                 
         
         // back door ...
-        /** @private */ _cml_internal function _getX() : Number { return (_motion_type & MT_PART_FLAG) ? _rx : x; }
-        /** @private */ _cml_internal function _getY() : Number { return (_motion_type & MT_PART_FLAG) ? _ry : y; }
-        /** @private */ _cml_internal function _getAx() : Number {
-            var filterd_mt:uint = _motion_type & MT_PART_FILTER;
+    /** @private */ public function _getX() : Float { return ((_motion_type & MT_PART_FLAG) != 0) ? _rx : x; }
+    /** @private */ public function _getY() : Float { return ((_motion_type & MT_PART_FLAG) != 0) ? _ry : y; }
+        /** @private */ public function _getAx() : Float {
+            var filterd_mt:Int = _motion_type & MT_PART_FILTER;
             return (filterd_mt == MT_CONST || filterd_mt == MT_BULLETML) ? 0 : _ax;
         }
-        /** @private */ _cml_internal function _getAy() : Number {
-            var filterd_mt:uint = _motion_type & MT_PART_FILTER;
+        /** @private */ public function _getAy() : Float {
+            var filterd_mt:Int = _motion_type & MT_PART_FILTER;
             return (filterd_mt == MT_CONST || filterd_mt == MT_BULLETML) ? 0 : _ay;
         }
 
@@ -1153,7 +1216,7 @@ if (target_object_id != target_object.id) { // if the id value is different,
     // initialize and finalize
     //------------------------------------------------------------
         /** @private initializer */ 
-        public function _initialize(parent_:CMLObject, isPart_:Boolean, access_id_:int, x_:Number, y_:Number, vx_:Number, vy_:Number, head_:Number) : CMLObject
+        public function _initialize(parent_:CMLObject, isPart_:Bool, access_id_:Int, x_:Float, y_:Float, vx_:Float, vy_:Float, head_:Float) : CMLObject
         {
             // clear some parameters
             vx = vx_;
@@ -1166,12 +1229,17 @@ if (target_object_id != target_object.id) { // if the id value is different,
             // set the relations
             _parent    = parent_;
             _parent_id = _parent._id;
-            _IDedChildren.length = 0;
-            _partChildren.length = 0;
+            if (_IDedChildren.length > 0) {
+                // TODO (haxe conversion): Is there a better way to do this?
+                _IDedChildren.splice(0, _IDedChildren.length);
+            }
+            if (_partChildren.length > 0) {
+                _partChildren.splice(0, _partChildren.length);
+            }
             
             // add this to the parent id list
             _access_id = access_id_;
-            if (access_id_ != ID_NOT_SPECIFYED) {
+            if (access_id_ != ID_NOT_SPECIFIED) {
                 _parent._IDedChildren.push(this);
             }
             
@@ -1197,21 +1265,22 @@ if (target_object_id != target_object.id) { // if the id value is different,
 
 
         /** @private finalizer */
-        public function _finalize() : void
+        public function _finalize() : Void
         {
             if (parent != _root) {
                 // remove this from the parent id list.
-                if (_access_id != ID_NOT_SPECIFYED) {
-                    _parent._IDedChildren.splice(_parent._IDedChildren.indexOf(this), 1);
+                if (_access_id != ID_NOT_SPECIFIED) {
+                    _parent._IDedChildren.remove(this);
                 }
                 // check parents parts
                 if (isPart) {
-                    _parent._partChildren.splice(_parent._partChildren.indexOf(this), 1);
+                    _parent._partChildren.remove(this);
                 }
             }
             
             // destroy all parts
-            for each (var obj:CMLObject in _partChildren) {
+            var obj:CMLObject;
+            for (obj in _partChildren) {
                 obj._destructionStatus = _destructionStatus;
             }
             
@@ -1232,25 +1301,21 @@ if (target_object_id != target_object.id) { // if the id value is different,
     // update 
     //------------------------------------------------------------
         /** update position and angle */
-        public function update() : void 
+        public function update() : Void 
         {
-            var sang:int, cang:int;
+            var sang:Int, cang:Int;
             
             switch (_motion_type) {
-            case MT_CONST: {
+            case MT_CONST: 
                    x += vx;
                    y += vy;
-                   break;
-               }
-            case MT_ACCEL: {
+            case MT_ACCEL: 
                     x += vx + _ax*0.5;
                     y += vy + _ay*0.5;
                     vx += _ax;
                     vy += _ay;
                     if (--_ac == 0) _motion_type = MT_CONST;
-                    break;
-                }
-            case MT_INTERPOL: {
+            case MT_INTERPOL:
                     x += vx + _ax*0.5 + _bx*0.16666666666666667;
                     y += vy + _ay*0.5 + _by*0.16666666666666667;
                     vx += _ax + _bx*0.5;
@@ -1258,9 +1323,7 @@ if (target_object_id != target_object.id) { // if the id value is different,
                     _ax += _bx;
                     _ay += _by;
                     if (--_ac == 0) _motion_type = MT_CONST;
-                    break;
-                }
-            case MT_BULLETML: {
+            case MT_BULLETML: 
                     sang = sin.index(angle);
                     cang = sang + sin.cos_shift;
                     vx = sin[cang] * _ax;
@@ -1270,34 +1333,26 @@ if (target_object_id != target_object.id) { // if the id value is different,
                     y += vy;
                     if (--_ac == 0) _bx=0;
                     if (_rotd == 0 && _bx == 0) _motion_type = MT_CONST;
-                    break;
-                }
-            case MT_GRAVITY: {
-                    _ax = (_rx - x) * _bx - vx * _by,
+            case MT_GRAVITY:
+                    _ax = (_rx - x) * _bx - vx * _by;
                     _ay = (_ry - y) * _bx - vy * _by;
                     x += vx + _ax*0.5;
                     y += vy + _ay*0.5;
                     vx += _ax;
                     vy += _ay;
                     if (--_ac == 0) _motion_type = MT_CONST;
-                    break;
-                }
-            case MT_PART_CONST: {
+            case MT_PART_CONST:
                     _rx += vx;
                     _ry += vy;
                     calcAbsPosition();
-                    break;
-                }
-            case MT_PART_ACCEL: {
+            case MT_PART_ACCEL:
                     _rx += vx + _ax*0.5;
                     _ry += vy + _ay*0.5;
                     vx += _ax;
                     vy += _ay;
                     calcAbsPosition();
                     if (--_ac == 0) _motion_type = MT_PART_CONST;
-                    break;
-                }
-            case MT_PART_INTERPOL: {
+            case MT_PART_INTERPOL:
                     _rx += vx + _ax*0.5 + _bx*0.16666666666666667;
                     _ry += vy + _ay*0.5 + _by*0.16666666666666667;
                     vx += _ax + _bx*0.5;
@@ -1306,9 +1361,7 @@ if (target_object_id != target_object.id) { // if the id value is different,
                     _ay += _by;
                     calcAbsPosition();
                     if (--_ac == 0) _motion_type = MT_PART_CONST;
-                    break;
-                }
-            case MT_PART_BULLETML: {
+            case MT_PART_BULLETML:
                     sang = sin.index(angle);
                     cang = sang + sin.cos_shift;
                     vx = sin[cang] * _ax;
@@ -1319,17 +1372,13 @@ if (target_object_id != target_object.id) { // if the id value is different,
                     calcAbsPosition();
                     if (--_ac == 0) _bx=0;
                     if (_rotd == 0 && _bx == 0) _motion_type = MT_PART_CONST;
-                    break;
-                }
             default:
-                break;
             }
             
             if (_rotd != 0) rotateHead();
             onUpdate();
         }
     }
-}
 
 
 

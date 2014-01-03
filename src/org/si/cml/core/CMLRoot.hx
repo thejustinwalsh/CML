@@ -1,19 +1,20 @@
-package org.si.cml.core {
-    import org.si.cml.CMLObject;
-    import org.si.cml.namespaces._cml_internal;
-    
-    
-    /** @private */
-    public class CMLRoot extends CMLObject
-    {
-        /** scroll angle */
-        _cml_internal var _scrollAngle:Number;
+package org.si.cml.core;
+
+import org.si.cml.CMLObject;
+
+
+/** @private */
+class CMLRoot extends CMLObject
+{
+    /** scroll angle */
+    public var _scrollAngle:Float;
         
-        /** constructor */
-        function CMLRoot()
-        {
-            _cml_internal::_scrollAngle = -90;
-        }
-   }
+    /** constructor */
+    function new()
+    {
+        super();
+        _scrollAngle = -90;
+    }
 }
+
 

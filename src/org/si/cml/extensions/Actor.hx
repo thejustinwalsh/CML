@@ -11,7 +11,7 @@ package org.si.cml.extensions {
     
     
     /** Extension of CMLObject that implements scope, life, hit test, drawing priority and management of instances. <br/>
-     *  You have to call Actor.initialize() first, and you have to call CMLObject.update() and Actor.draw() for each frame.<br/>
+     *  You have to call Actor.initialize() first, and you have to call CMLObject.frameUpdate() and Actor.draw() for each frame.<br/>
      *  Actor.initialize() registers some user define commands as below,
      *  <ul>
      *  <li>$life; Refers the value of Actor.life.</li>

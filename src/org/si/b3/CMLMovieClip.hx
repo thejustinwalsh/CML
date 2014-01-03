@@ -162,7 +162,7 @@ package org.si.b3 {
         public function update(e:Event=null) : void
         {
             if (!pause) {
-                CMLObject.update();
+                CMLObject.frameUpdate();
             }
             scene._cmlmovieclip_internal::_onUpdate();
         }

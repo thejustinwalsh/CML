@@ -5,16 +5,14 @@
 //----------------------------------------------------------------------------------------------------
 
 
-package org.si.cml.core {
-    import org.si.cml.namespaces._cml_fiber_internal;
-    
-    
-    /** @private */
-    public class CMLRefer extends CMLState
-    {
+package org.si.cml.core;
+
+/** @private */
+class CMLRefer extends CMLState
+{
     // variables
     //------------------------------------------------------------
-        _cml_fiber_internal var _label:String = null;
+    public var _label:String = null;
     
         // meaning of reference
         // label=null,   jump=null   means previous call "{.}"
@@ -25,25 +23,24 @@ package org.si.cml.core {
         
     // functions
     //------------------------------------------------------------
-        function CMLRefer(pointer:CMLState=null, label_:String=null)
-        {
-            super(ST_REFER);
-
-            _cml_fiber_internal::jump = pointer;
-            _cml_fiber_internal::_label = label_;
-        }
+    public function new(pointer:CMLState=null, label_:String=null)
+    {
+        super(CMLState.ST_REFER);
         
+        jump = pointer;
+        _label = label_;
+    }
+    
+    
+    public override function _setCommand(cmd:String) : CMLState
+    {
+        return this;
+    }
+    
         
-        protected override function _setCommand(cmd:String) : CMLState
-        {
-            return this;
-        }
-        
-        
-        _cml_fiber_internal function isLabelUnsolved() : Boolean
-        {
-            return (_cml_fiber_internal::jump==null && _cml_fiber_internal::_label!=null);
-        }
+    public function isLabelUnsolved() : Bool
+    {
+        return (jump==null && _label!=null);
     }
 }
 

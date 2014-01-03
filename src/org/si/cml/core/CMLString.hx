@@ -8,31 +8,28 @@ public function get string():String
 */
 
 
-package org.si.cml.core {
-    import org.si.cml.namespaces._cml_internal;
+package org.si.cml.core;
+
     
-    
-    /** @private */
-    public class CMLString extends CMLState
-    {
+/** @private */
+class CMLString extends CMLState
+{
     // variables
     //------------------------------------------------------------
-        _cml_internal var _string:String;
+    public var _string:String;
         
 
     // functions
     //------------------------------------------------------------
-        public function CMLString(str:String)
-        {
-            super(ST_STRING);
-            _cml_internal::_string = str;
-        }
-
-
-        protected override function _setCommand(cmd:String) : CMLState
-        {
-            return this;
-        }
+    public function new(str:String)
+    {
+        super(CMLState.ST_STRING);
+        _string = str;
+    }
+    
+    public override function _setCommand(cmd:String) : CMLState
+    {
+        return this;
     }
 }
 

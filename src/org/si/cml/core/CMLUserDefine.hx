@@ -5,46 +5,45 @@
 //----------------------------------------------------------------------------------------------------
 
 
-package org.si.cml.core {
-    import org.si.cml.CMLFiber;
-    import org.si.cml.namespaces._cml_fiber_internal;
-    
+package org.si.cml.core;
 
-    /** @private */
-    internal class CMLUserDefine extends CMLState
-    {
+import org.si.cml.CMLFiber;
+
+/** @private */
+class CMLUserDefine extends CMLState
+{
     // variables
     //------------------------------------------------------------
-        private var _funcUserDefine:Function;
-        private var _argumentCount:int;
-        private var _requireSequence:Boolean;
+        private var _funcUserDefine:CMLFiber->Array<Dynamic>->Void;
+        private var _argumentCount:Int;
+        private var _requireSequence:Bool;
 
 
     // functions
     //------------------------------------------------------------
-        function CMLUserDefine(obj:*)
+        public function new(obj:Dynamic)
         {
-            super(ST_NORMAL);
+            super(CMLState.ST_NORMAL);
             _funcUserDefine  = obj.func;
             _argumentCount   = obj.argc;
             _requireSequence = obj.reqseq;
-            if (_requireSequence) _cml_fiber_internal::type = ST_RESTRICT | STF_CALLREF;
-            _cml_fiber_internal::func = _call;
+            if (_requireSequence) type = CMLState.ST_RESTRICT | CMLState.STF_CALLREF;
+            func = _call;
         }
 
 
-        protected override function _setCommand(cmd:String) : CMLState
+        public override function _setCommand(cmd:String) : CMLState
         {
             _resetParameters(_argumentCount);
             return this;
         }
 
 
-        private function _call(fbr:CMLFiber): Boolean
+        private function _call(fbr:CMLFiber): Bool
         {
-            _funcUserDefine(fbr, _cml_fiber_internal::_args);
+            _funcUserDefine(fbr, _args);
             return true;
         }
-    }
 }
+
 

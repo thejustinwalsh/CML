@@ -5,8 +5,8 @@
 //----------------------------------------------------------------------------------------------------
 
 
-package org.si.cml.core {
-    import org.si.cml.namespaces._cml_internal;
+package org.si.cml.core;
+
     
     
     /** The implement of bm/bs/br commands.
@@ -22,11 +22,11 @@ package org.si.cml.core {
      * @see CMLBarrage#appendSequence()
      * @see CMLBarrage#appendRandom()
      */
-    public class CMLBarrage
-    {
+class CMLBarrage
+{
         // CMLBarrageElem list
         /** @private */
-        internal var qrtList:CMLList = new CMLList();
+        public var qrtList:CMLList;
 
 
         /** Constructor.
@@ -34,8 +34,9 @@ package org.si.cml.core {
          *  @default bm1,0,0,0
          *  @see CMLFiber#barrage
          */
-        function CMLBarrage()
+        public function new()
         {
+            qrtList = new CMLList();
         }
         
 
@@ -46,7 +47,7 @@ package org.si.cml.core {
         /** Clear all barrage setting. 
          *  Reset to "bm1,0,0,0".
          */
-        public function clear() : void
+        public function clear() : Void
         {
             freeList.cat(qrtList);
         }
@@ -55,11 +56,13 @@ package org.si.cml.core {
         /** Append copy of other CLMBarrage.
          *  @param copy source.
          */
-        public function appendCopyOf(src:CMLBarrage) : void
+        public function appendCopyOf(src:CMLBarrage) : Void
         {
             var qrt:CMLListElem;
-            for (qrt=src.qrtList.begin; qrt!=src.qrtList.end; qrt=qrt.next) {
-                _appendElementCopyOf(CMLBarrageElem(qrt));
+            qrt=src.qrtList.begin;
+            while (qrt!=src.qrtList.end) {
+                _appendElementCopyOf(cast(qrt,CMLBarrageElem));
+                qrt=qrt.next;
             }
         }
         
@@ -70,9 +73,9 @@ package org.si.cml.core {
          *  @param speed_ speed difference of barrage.
          *  @param interval_ rapid interval frame.
          */
-        public function appendSequence(count_:int, angle_:Number, speed_:Number, interval_:Number) : void
+        public function appendSequence(count_:Int, angle_:Float, speed_:Float, interval_:Float) : Void
         {
-            qrtList.push(alloc()._cml_internal::setSequence(count_, angle_, speed_, interval_));
+            qrtList.push(alloc().setSequence(count_, angle_, speed_, interval_));
         }
         
         
@@ -82,7 +85,7 @@ package org.si.cml.core {
          *  @param speed_ speed difference of barrage.
          *  @param interval_ rapid interval frame.
          */
-        public function appendMultiple(count_:int, angle_:Number, speed_:Number, interval_:Number) : void
+        public function appendMultiple(count_:Int, angle_:Float, speed_:Float, interval_:Float) : Void
         {
             qrtList.push(alloc().setMultiple(count_, angle_, speed_, interval_));
         }
@@ -94,7 +97,7 @@ package org.si.cml.core {
          *  @param speed_ speed difference of barrage.
          *  @param interval_ rapid interval frame.
          */
-        public function appendRandom(count_:int, angle_:Number, speed_:Number, interval_:Number) : void
+        public function appendRandom(count_:Int, angle_:Float, speed_:Float, interval_:Float) : Void
         {
             qrtList.push(alloc().setRandom(count_, angle_, speed_, interval_));
         }
@@ -102,9 +105,9 @@ package org.si.cml.core {
         
         // append copy of other elements
         /** @private */
-        internal function _appendElementCopyOf(src:CMLBarrageElem) : void
+        public function _appendElementCopyOf(src:CMLBarrageElem) : Void
         {
-            qrtList.push(alloc()._cml_internal::copy(src));
+            qrtList.push(alloc().copy(src));
         }
 
 
@@ -115,11 +118,11 @@ package org.si.cml.core {
         static private var freeList:CMLList = new CMLList();
         static private function alloc() : CMLBarrageElem
         {
-            var qrt:CMLBarrageElem = CMLBarrageElem(freeList.pop());
+            var qrt:CMLBarrageElem = cast(freeList.pop(),CMLBarrageElem);
             if (qrt == null) qrt = new CMLBarrageElem();
             return qrt;
         }
     }
-}
+
 
 
