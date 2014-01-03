@@ -4,6 +4,12 @@ CannonML (Cannon Macro Language) provides a Flash shumps pattern generator repre
 [Nomltest on Flash](http://wonderfl.net/c/alru) is the best example what CannonML can do.  
 [Try cannonML workbench in browser](http://soundimpulse.sakura.ne.jp/SolidImage/cml/workingbench.html)(Press [Language] to change language).  
 
+Haxe port
+----
+This is a port of Keim's great CannonML to Haxe.
+
+At the moment, most everything works, though calling user defined labels does not.
+
 Scripting style
 ----
 
