@@ -58,7 +58,7 @@ class CMLParser
 
 
         // set user define setter
-        static public function userCommand(name:String, func:CMLFiber->Array<Dynamic>, argc:Int, requireSequence:Bool) : Void
+        static public function userCommand(name:String, func:CMLFiber->Array<Dynamic>->Void, argc:Int, requireSequence:Bool) : Void
         {
             var target : CMLUserDefine = new CMLUserDefine({func:func, argc:argc, reqseq:requireSequence});
             trace('**** Defining new user command \"$name\".');
