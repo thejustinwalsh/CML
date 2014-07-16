@@ -201,7 +201,7 @@ function playSound(fbr:CMLFiber, args:Array) : Void
 }
 </listing>
         */
-        static public function registerUserCommand(name:String, func:CMLFiber->Array<Dynamic>, argc:Int=0, requireSequence:Bool=false) : Void
+        static public function registerUserCommand(name:String, func:CMLFiber->Array<Dynamic>->Void, argc:Int=0, requireSequence:Bool=false) : Void
         {
             trace('*** Registering user command \"$name\".');
             CMLParser.userCommand(name, func, argc, requireSequence);
