@@ -18,7 +18,7 @@ Scripting style
 This quite cryptic script is used [here](http://wonderfl.net/c/22vi).  
 Basic tutorials are in [workbench](http://soundimpulse.sakura.ne.jp/SolidImage/cml/workingbench.html).  
 More informations are in [the language reference](http://soundimpulse.sakura.ne.jp/SolidImage/cml/cannonML_e.html)([Japanese](http://soundimpulse.sakura.ne.jp/SolidImage/cml/cannonML.html)).  
-And [anothr cannonML script for whole stage](http://keim-at-si.blogspot.jp/2008/04/lr0.html), copy and paste it on workbench to start game.
+And [another cannonML script for whole stage](http://keim-at-si.blogspot.jp/2008/04/lr0.html), copy and paste it on workbench to start game.
 
 Coding style
 ----
