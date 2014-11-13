@@ -530,7 +530,7 @@ class CMLObject extends CMLListElem
     public function create(x_:Float, y_:Float, parent_:CMLObject=null, isPart_:Bool=false, access_id_:Int=ID_NOT_SPECIFIED) : CMLObject
     {
         if (isActive) throw new Error("CMLObject.create() must be called from inactive CMLObject.");
-        _initialize((parent_ == null)? _root:parent_, isPart_, access_id_, x_, y_, 0, 0, 0);
+        _initialize((parent_ == null) ? _root:parent_, isPart_, access_id_, x_, y_, 0, 0, 0);
         return this;
     }
     

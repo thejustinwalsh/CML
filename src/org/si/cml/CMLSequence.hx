@@ -340,7 +340,6 @@ var seqAC:CMLSequence = seq.findSequence("A.C");    // seqAB is "v0,4[w10f2]". S
         public function newChildSequence(label_:String) : CMLSequence
         {
             var seq:CMLSequence = new CMLSequence();
-            trace('*** Making new child sequence for label \"$label_\".');
             seq.type = (label_ == null) ? CMLState.ST_NO_LABEL : CMLState.ST_LABEL;
             seq._label = label_;
             _addChild(seq);

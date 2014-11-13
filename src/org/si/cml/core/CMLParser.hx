@@ -61,7 +61,7 @@ class CMLParser
         static public function userCommand(name:String, func:CMLFiber->Array<Dynamic>->Void, argc:Int, requireSequence:Bool) : Void
         {
             var target : CMLUserDefine = new CMLUserDefine({func:func, argc:argc, reqseq:requireSequence});
-            trace('**** Defining new user command \"$name\".');
+            //trace('**** Defining new user command \"$name\".');
             mapUsrDefCmd[name] = target;
         }
 
@@ -72,7 +72,7 @@ class CMLParser
     //------------------------------------------------------------
         static public function _parse(seq:CMLSequence, cml_string:String) : Void
         {
-            trace('In CMLParser._parse() for string \"$cml_string\"');
+            //trace('In CMLParser._parse() for string \"$cml_string\"');
             
             // create regular expression
             var regexp:EReg = _createCMLRegExp();
@@ -90,9 +90,9 @@ class CMLParser
                     for (i in 0...REX_ERROR) {
                         res.push(regexp.matched(i));
                     }
-                    trace('CMLParser: Matched: \"$res\"');
+                    //trace('CMLParser: Matched: \"$res\"');
                     
-                    //trace(res);
+                    ////trace(res);
                     if (!_parseFormula(res)) {              // parse formula first
                         _append();                          // append previous formula and statement
                         // check the result of matching
@@ -120,9 +120,9 @@ class CMLParser
                     cml_string = regexp.matchedRight();
                     // Reset the matching array
                     res.splice(0,res.length);
-                    trace('_parse-next match is \"$cml_string\".');
+                    //trace('_parse-next match is \"$cml_string\".');
                 }
-                trace('CMLParser: Done matching');
+                //trace('CMLParser: Done matching');
 
                 // throw error when stacs are still remain.
                 if (loopstac.length  != 0) throw new Error("[[...] ?");
@@ -136,8 +136,8 @@ class CMLParser
             catch (err:Error) {
                 listState.cut(listState.head, listState.tail);
                 seq.clear();
-                trace("Exception after matching");
-                trace("Stack: " + CallStack.toString(CallStack.exceptionStack()));
+                //trace("Exception after matching");
+                //trace("Stack: " + CallStack.toString(CallStack.exceptionStack()));
                 throw err;
             }
         }
@@ -185,9 +185,9 @@ class CMLParser
         static private function _parseFormula(res:Array<String>) : Bool
         {
             var form:String = res[REX_FORMULA];
-            trace('In _parseFormula for \"$form\" with cmdTemp \"$cmdTemp\".');
+            //trace('In _parseFormula for \"$form\" with cmdTemp \"$cmdTemp\".');
             if (res[REX_FORMULA] == null) return false;
-            trace("We have a formula!");
+            //trace("We have a formula!");
             // formula, argument, ","
             if (cmdTemp == null) throw new Error("in formula " + res[REX_FORMULA]);
             if (res[REX_FORMULA] == ",") {
@@ -209,7 +209,7 @@ class CMLParser
             
             cmdKey = res[REX_NORMAL];           // command key
             cmdTemp = newCMLState();            // new command
-            trace('in _parseStatement: cmdKey: $cmdKey cmdTemp: $cmdTemp');
+            //trace('in _parseStatement: cmdKey: $cmdKey cmdTemp: $cmdTemp');
             
             // individual operations
             switch (cmdKey) {
@@ -247,7 +247,7 @@ class CMLParser
         static private function _parseLabelDefine(res:Array<String>) : Bool
         {
             if (res[REX_LABELDEF] == null) return false;
-            trace("*** Found a label define: \""+res[REX_LABELDEF]+"\".");
+            //trace("*** Found a label define: \""+res[REX_LABELDEF]+"\".");
             cmdTemp = _new_sequence(cast(childstac[0],CMLSequence), res[REX_LABELDEF]);   // new sequence with label
             fmlTemp = _check_argument(cmdTemp, res);                    // push new argument
             childstac.unshift(cmdTemp);                                 // push child stac
@@ -290,7 +290,7 @@ class CMLParser
         static private function _parseUserDefined(res:Array<String>) : Bool
         {
             if (res[REX_USERDEF] == null) return false;
-            trace("**** Pushing new user defined: \"" + res[REX_USERDEF] + "\"");
+            //trace("**** Pushing new user defined: \"" + res[REX_USERDEF] + "\"");
             cmdTemp = _new_user_defined(res[REX_USERDEF]);      // new command
             fmlTemp = _check_argument(cmdTemp, res);            // push new arguments
             return true;
@@ -442,7 +442,7 @@ class CMLParser
             var literal:String = res[REX_ARG_LITERAL];
             var postfix:String = res[REX_ARG_POSTFIX];
             
-            trace('CMLParser: _check_argument: prefix \"$prefix\" literal \"$literal\" postfix \"$postfix\"');
+            //trace('CMLParser: _check_argument: prefix \"$prefix\" literal \"$literal\" postfix \"$postfix\"');
             
             // push 0 before ","
             if (isComma && state._args.length==0) state._args.push(Math.NaN);
@@ -473,7 +473,7 @@ class CMLParser
                 if (isComma) state._args.push(Math.NaN);
             }
             
-            trace('CMLParser: check_argument: returning $fml');
+            //trace('CMLParser: check_argument: returning $fml');
             return fml;
         }
 
@@ -493,7 +493,7 @@ class CMLParser
         {
             var cmdlist:Array<String> = new Array<String>();
             var cmd:String;
-            trace("*** Getting user command: " + mapUsrDefCmd);
+            //trace("*** Getting user command: " + mapUsrDefCmd);
             for (cmd in mapUsrDefCmd.keys()) { cmdlist.push(cmd); }
             cmdlist.sort(strSort);
             return cmdlist.join('|');
@@ -513,7 +513,7 @@ class CMLParser
             reflist.sort(strSort);
             ref = reflist.join('|');
             var search:String = "\\.";
-            trace('*** userReference string: $ref');
+            //trace('*** userReference string: $ref');
             return StringTools.replace(ref, search,  '\\\\.');
         }
 

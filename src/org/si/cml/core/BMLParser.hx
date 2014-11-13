@@ -163,7 +163,7 @@ class BMLParser
         static private var _erroredXML:Xml = null;
         
         
-        static private function bulletml(xml:Xml, defaultFunc:Function=null) : Bool
+        static private function bulletml(xml:Xml) : Bool
         {
             if (xml.nodeName != "bulletml") return false;
             
@@ -174,10 +174,7 @@ class BMLParser
                     if (!fire(elem, false))
                         if (!bullet(elem, false)) 
                         {
-                            // parse other elements here
-                            if (defaultFunc != null) {
-                                if (!defaultFunc(elem)) throw _errorElement(xml, elem.nodeName);
-                            }
+                            throw _errorElement(xml, elem.nodeName);
                         }
             }
             
