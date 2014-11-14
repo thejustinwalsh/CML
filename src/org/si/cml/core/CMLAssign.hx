@@ -19,7 +19,7 @@ class CMLAssign extends CMLState
         private  var _index:Int = 0;
         public var max_reference:Int = 0;
 
-        static public var assign_rex:String = "l\\$([1-9r][+\\-*/]?)=";
+        static public var assign_rex:String = "l\\$([1-9r][+\\-*/]?)\\s*=";
 
         
     // functions

@@ -33,7 +33,9 @@ class CMLFormula extends CMLState
         static public function get_operand_rex() : String {
             if (_operand_rex == null) {
                 _operand_rex  = "(" + CMLFormulaOperator.prefix_rex + "+)?";
+                _operand_rex += "\\s*";
                 _operand_rex += CMLFormulaLiteral.literal_rex + "?";
+                _operand_rex += "\\s*";
                 _operand_rex += "(" + CMLFormulaOperator.postfix_rex + "+)?";
                 _prefixRegExp  = new EReg(CMLFormulaOperator.prefix_rex, 'g');
                 _postfixRegExp = new EReg(CMLFormulaOperator.postfix_rex, 'g');
