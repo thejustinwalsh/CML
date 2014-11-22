@@ -7,63 +7,60 @@
 
 package org.si.cml.core;
 
+import openfl.errors.Error;
 using EReg;
 using StringTools;
-//using Stack;
-
 import org.si.cml.CMLSequence;
-import flash.errors.Error;    
 import haxe.CallStack;
 
 /** @private */
 class CMLParser
 {
-        
-    // variables
-    //------------------------------------------------------------
+// variables
+//------------------------------------------------------------
     // user defined reference
     static private var mapUsrDefRef:Map<String, CMLFiber->Float> = new Map<String, CMLFiber->Float>();
     // user defined command
     static private var mapUsrDefCmd:Map<String, CMLUserDefine> = new Map<String, CMLUserDefine>();
 
-        static private var listState:CMLList = new CMLList();       // statement chain
-        static private var loopstac :Array<CMLState> = new Array<CMLState>();  // loop stac
-        static private var childstac:Array<CMLState> = new Array<CMLState>();  // child cast "{}" stac
-        static private var cmdKey :String   = "";                   // current parsing key
-        static private var cmdTemp:CMLState = null;                 // current parsing statement
-        static private var fmlTemp:CMLFormula = null;               // current parsing formula
+    static private var listState:CMLList = new CMLList();       // statement chain
+    static private var loopstac :Array<CMLState> = new Array<CMLState>();  // loop stac
+    static private var childstac:Array<CMLState> = new Array<CMLState>();  // child cast "{}" stac
+    static private var cmdKey :String   = "";                   // current parsing key
+    static private var cmdTemp:CMLState = null;                 // current parsing statement
+    static private var fmlTemp:CMLFormula = null;               // current parsing formula
 
-        // functor for allocate CMLState instance.
-        static private var newCMLState:Void->CMLState = function():CMLState { return new CMLState(); }
+    // functor for allocate CMLState instance.
+    static private var newCMLState:Void->CMLState = function():CMLState { return new CMLState(); }
         
         
 
+// constructor
+//------------------------------------------------------------
     // constructor
-    //------------------------------------------------------------
-        // constructor
-            public function new()
-        {
-        }
+    public function new()
+    {
+    }
 
 
 
 
-    // operations
-    //------------------------------------------------------------
-        // set user define getter
-        static public function userReference(name:String, func:CMLFiber->Float) : Void
-        {
-            mapUsrDefRef[name] = func;
-        }
+// operations
+//------------------------------------------------------------
+    // set user define getter
+    static public function userReference(name:String, func:CMLFiber->Float) : Void
+    {
+        mapUsrDefRef[name] = func;
+    }
 
 
-        // set user define setter
-        static public function userCommand(name:String, func:CMLFiber->Array<Dynamic>->Void, argc:Int, requireSequence:Bool) : Void
-        {
-            var target : CMLUserDefine = new CMLUserDefine({func:func, argc:argc, reqseq:requireSequence});
-            //trace('**** Defining new user command \"$name\".');
-            mapUsrDefCmd[name] = target;
-        }
+    // set user define setter
+    static public function userCommand(name:String, func:CMLFiber->Array<Dynamic>->Void, argc:Int, requireSequence:Bool) : Void
+    {
+        var target : CMLUserDefine = new CMLUserDefine({func:func, argc:argc, reqseq:requireSequence});
+        //trace('**** Defining new user command \"$name\".');
+        mapUsrDefCmd[name] = target;
+    }
 
 
 
@@ -127,7 +124,7 @@ class CMLParser
                 // throw error when stacs are still remain.
                 if (loopstac.length  != 0) throw new Error("[[...] ?");
                 if (childstac.length != 1) throw new Error("{{...} ?");
-                
+
                 _append();     // append last statement
                 _terminate();  // terminate the tail of sequence
 
@@ -340,7 +337,7 @@ class CMLParser
                 rexstr += "|'(.*?)'";                               // string (res[2])
                 rexstr += "|((";                                    // ---all--- (res[3,4])
                 rexstr += "(,|\\+|-|\\*|/|%|==|!=|>=|<=|>|<)";      // formula and arguments (res[5])
-                rexstr += "|&(" + _userCommandRegExp + ")";         // user defined commands (res[6])
+                rexstr += "|&\\s*(" + _userCommandRegExp + ")";     // user defined commands (res[6])
                 rexstr += "|" + CMLState.command_rex;               // normal commands (res[7])
                 rexstr += "|" + CMLAssign.assign_rex;               // assign (res[8])
                 rexstr += "|([A-Z_.][A-Z0-9_.]*)";                  // call sequence (res[9])
@@ -496,7 +493,9 @@ class CMLParser
             //trace("*** Getting user command: " + mapUsrDefCmd);
             for (cmd in mapUsrDefCmd.keys()) { cmdlist.push(cmd); }
             cmdlist.sort(strSort);
-            return cmdlist.join('|');
+            var userCommandRegex = cmdlist.join('|');
+            //trace('    Regex string is $userCommandRegex');
+            return userCommandRegex;
         }
 
 

@@ -7,9 +7,12 @@
 
 package org.si.cml;
 
+import org.si.cml.core.CMLParser;
+import org.si.cml.core.BMLParser;
+import org.si.cml.core.CMLState;
+import openfl.errors.Error;
 import org.si.cml.core.*;
-import flash.errors.Error;
-    
+
     /** Class for the sequences created from the cannonML or the bulletML.
      *  <p>
      *  USAGE<br/>
@@ -203,7 +206,6 @@ function playSound(fbr:CMLFiber, args:Array) : Void
         */
         static public function registerUserCommand(name:String, func:CMLFiber->Array<Dynamic>->Void, argc:Int=0, requireSequence:Bool=false) : Void
         {
-            trace('*** Registering user command \"$name\".');
             CMLParser.userCommand(name, func, argc, requireSequence);
         }
 

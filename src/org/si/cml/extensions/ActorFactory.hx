@@ -7,6 +7,7 @@
 
 package org.si.cml.extensions;
 
+import openfl.errors.Error;
 import org.si.cml.extensions.Actor;
 import flash.errors.Error;
 
@@ -98,6 +99,9 @@ class ActorFactory
                 return null;
             }
             act = Type.createInstance( _actorClass, [] );
+            if (act == null) {
+                throw new Error('Failed to create actor of class $_actorClass');
+            }
             act._factory = this;
         } else {
             // remove from freeList

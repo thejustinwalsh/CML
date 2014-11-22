@@ -5,14 +5,12 @@
 //----------------------------------------------------------------------------------------------------
 
 
-package org.si.cml {
-    /** Cannon ML infomation */
-    public class CannonML {
-        /** Version information */
-        static public const VERSION:String = "0.3.1";
-        
-        
-    }
+package org.si.cml;
+
+/** Cannon ML infomation */
+class CannonML {
+    /** Version information */
+    static public const VERSION:String = "0.3.1";
 }
 
 

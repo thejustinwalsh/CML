@@ -7,10 +7,10 @@
 
 package org.si.cml.core;
 
+import openfl.errors.Error;
 import org.si.cml.CMLObject;
 import org.si.cml.CMLFiber;
-import flash.errors.Error;    
-    
+
 /** @private */
 class CMLAssign extends CMLState
 {
@@ -19,7 +19,7 @@ class CMLAssign extends CMLState
         private  var _index:Int = 0;
         public var max_reference:Int = 0;
 
-        static public var assign_rex:String = "l\\$([1-9r][+\\-*/]?)\\s*=";
+        static public var assign_rex:String = "l\\$([1-9r]\\s*[+\\-*/=])=?";
 
         
     // functions
@@ -36,17 +36,17 @@ class CMLAssign extends CMLState
                 max_reference = _index+1;
             }
             
-            if (str.length == 1) {
-                func = (_index == -1) ? _asgr:_asg;
-            } else {
-                var ope:String = (str.charAt(1));
-                switch(ope) {
-                case '+':   func = (_index == -1) ? _addr:_add;
-                case '-':   func = (_index == -1) ? _subr:_sub;
-                case '*':   func = (_index == -1) ? _mulr:_mul;
-                case '/':   func = (_index == -1) ? _divr:_div;
-                default:    throw new Error("BUG!! unknown error in assign");
-                }
+            var index:Int = 1;
+            while (StringTools.isSpace(str,index)) index++;
+
+            var ope:String = (str.charAt(index));
+            switch(ope) {
+            case '+':   func = (_index == -1) ? _addr:_add;
+            case '-':   func = (_index == -1) ? _subr:_sub;
+            case '*':   func = (_index == -1) ? _mulr:_mul;
+            case '/':   func = (_index == -1) ? _divr:_div;
+            case '=':   func = (_index == -1) ? _asgr:_asg;
+            default:    throw new Error('BUG!! Unknown operator "$ope" in assign');
             }
         }
 

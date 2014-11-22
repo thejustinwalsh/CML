@@ -7,6 +7,11 @@
 
 package org.si.cml;
 
+import org.si.cml.core.CMLBarrageElem;
+import org.si.cml.core.CMLList;
+import org.si.cml.core.CMLState;
+import org.si.cml.core.CMLBarrage;
+import org.si.cml.core.CMLListElem;
 import org.si.cml.core.*;
 import flash.errors.Error;
 import haxe.CallStack;
@@ -479,12 +484,16 @@ class CMLFiber extends CMLListElem
         private function _destroyByObject(obj:CMLObject) : CMLListElem
         {
             // check all children
-            var elem     :CMLListElem;
+            var elem     :CMLListElem = _listChild.begin;
             var elem_end :CMLListElem = _listChild.end;
-            elem=_listChild.begin;
-            do {
-                elem = cast(elem,CMLFiber)._destroyByObject(obj);
-            } while( elem!=elem_end);
+            while(elem!=elem_end) {
+                try {
+                    elem = cast(elem,CMLFiber)._destroyByObject(obj);
+                }
+                catch (e:Dynamic) {
+                    trace('Failed to destroy by object on elem <$elem>: $e');
+                }
+            }
 
             elem = next;
             if (_object == obj) destroy();
@@ -639,7 +648,7 @@ class CMLFiber extends CMLListElem
         /** call only from CMLObject.execute() @private */ 
         static public function _newRootFiber(obj:CMLObject, seq:CMLSequence, args_:Array<Dynamic>, invt_:Int) : CMLFiber
         {
-            if (seq.isEmpty) return null;
+            if (seq == null || seq.isEmpty) return null;
             var fbr:CMLFiber = cast(_freeFibers.pop(),CMLFiber);
             if (fbr == null) {
                 fbr = new CMLFiber();
