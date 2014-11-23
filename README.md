@@ -1,6 +1,6 @@
 CannonML
 ====
-CannonML (Cannon Macro Language) provides a Flash shumps pattern generator represented in very very short text.  
+CannonML (Cannon Macro Language) provides a Flash shmups pattern generator represented in very very short text.  
 [Nomltest on Flash](http://wonderfl.net/c/alru) is the best example what CannonML can do.  
 [Try cannonML workbench in browser](http://soundimpulse.sakura.ne.jp/SolidImage/cml/workingbench.html)(Press [Language] to change language).  
 
@@ -25,5 +25,11 @@ Coding style
 The CannonML library is already installed in Wonderfl. You can check some codes using CannonML.  
 [CannonML - Wonderfl build flash online](http://wonderfl.net/tag/cannonml)  
 [CannonML v0.31 API Documentation](http://www.libspark.org/htdocs/as3/cml/)
+
+Installation
+----
+To install, run 'haxelib install cannonml'.
+Then add '<haxelib name="openfl-ouya" />' to your project.xml.
+
 
 
