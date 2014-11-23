@@ -3,10 +3,7 @@
 //  Copyright (c) 2007 keim All rights reserved.
 //  Distributed under BSD-style license (see license.txt).
 //----------------------------------------------------------------------------------------------------
-/*
-public function get string():String
-*/
-
+// Ported to haxe by Brian Gunn (gunnbr@gmail.com) in 2014
 
 package org.si.cml.core;
 

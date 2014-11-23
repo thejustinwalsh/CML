@@ -3,6 +3,7 @@
 //  Copyright (c) 2007 kei mesuda(keim) ALL RIGHTS RESERVED.
 //  This code is under BSD-style(license.txt) licenses.
 //----------------------------------------------------------------------------------------------------
+// Ported to haxe by Brian Gunn (gunnbr@gmail.com) in 2014
 
 
 package org.si.cml;

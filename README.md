@@ -8,7 +8,7 @@ Haxe port
 ----
 This is a port of Keim's great CannonML to Haxe.
 
-At the moment, most everything works, though calling user defined labels does not.
+At the moment, most everything works to the point where NomlTest works!
 
 Scripting style
 ----
