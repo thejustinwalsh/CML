@@ -11,7 +11,7 @@ package org.si.cml;
 /** Cannon ML infomation */
 class CannonML {
     /** Version information */
-    static public const VERSION:String = "0.3.1";
+    public static inline var VERSION:String = "0.3.1.1";
 }
 
 

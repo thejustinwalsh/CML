@@ -3,14 +3,12 @@
 //--------------------------------------------------------------------------------
 package org.si.b3.modules;
 
-import openfl._v2.events.TouchEvent;
 import openfl._v2.events.Event;
 import openfl._v2.events.KeyboardEvent;
 import openfl.errors.Error;
 import openfl._v2.Vector;
-import openfl.ui.Keyboard;
-
 import openfl.events.JoystickEvent;
+import openfl.ui.Keyboard;
 
 #if ouya
 import openfl.utils.JNI;
@@ -109,7 +107,7 @@ class CMLMovieClipControl
         initialize();
         mapArrowKeys();
         mapNumKeys();
-        mapWSAD();
+        mapWASD();
         mapButtons(["Z","N","CONTROL"], ["X","M","SHIFT"], ["C",","], ["V","."]);
         instance = this;
     }
@@ -205,14 +203,14 @@ class CMLMovieClipControl
     }
     
     
-    /** assign "WASD" keys as moving button
+    /** assign "WASD" keys as moving buttons
      *  @param button0 Array, keycode or name for button0
      *  @param button1 Array, keycode or name for button1
      *  @param button2 Array, keycode or name for button2
      *  @param button3 Array, keycode or name for button3
      *  @return this instance
      */
-    public function mapWSAD(button0:Array<Dynamic>=null, button1:Array<Dynamic>=null, button2:Array<Dynamic>=null, button3:Array<Dynamic>=null) : CMLMovieClipControl
+    public function mapWASD(button0:Array<Dynamic>=null, button1:Array<Dynamic>=null, button2:Array<Dynamic>=null, button3:Array<Dynamic>=null) : CMLMovieClipControl
     {
         map(KEY_UP, ["W"]).map(KEY_DOWN, ["S"]).map(KEY_LEFT, ["A"]).map(KEY_RIGHT, ["D"]);
         return mapButtons(button0, button1, button2, button3);
@@ -228,10 +226,10 @@ class CMLMovieClipControl
      */
     public function mapButtons(button0:Array<Dynamic>=null, button1:Array<Dynamic>=null, button2:Array<Dynamic>=null, button3:Array<Dynamic>=null) : CMLMovieClipControl
     {
-        map(KEY_BUTTON0, [button0]);
-        map(KEY_BUTTON1, [button1]);
-        map(KEY_BUTTON2, [button2]);
-        map(KEY_BUTTON3, [button3]);
+        if (button0 != null) map(KEY_BUTTON0, [button0]);
+        if (button1 != null) map(KEY_BUTTON1, [button1]);
+        if (button2 != null) map(KEY_BUTTON2, [button2]);
+        if (button3 != null) map(KEY_BUTTON3, [button3]);
         return this;
     }
     
@@ -303,19 +301,35 @@ class CMLMovieClipControl
         }
     }
 
-    // TODO: Make better joystick button mapping support!
-    // This existing (and temporary) support is pretty specific to the Nomltest game.
-
+    // TODO: Add support for the right stick
 #if ouya
-    static inline public var BUTTON_FIRE1A:Int = OuyaController.BUTTON_O;
-    static inline public var BUTTON_FIRE1B:Int = OuyaController.BUTTON_L1;
-    static inline public var BUTTON_FIRE2:Int = OuyaController.BUTTON_R1;
+    static inline private var BUTTON_BOTTOM : Int = OuyaController.BUTTON_O;
+    static inline private var BUTTON_RIGHT  : Int = OuyaController.BUTTON_A;
+    static inline private var BUTTON_LEFT   : Int = OuyaController.BUTTON_U;
+    static inline private var BUTTON_TOP    : Int = OuyaController.BUTTON_Y;
+    static inline private var BUTTON_L1     : Int = OuyaController.BUTTON_L1;
+    static inline private var BUTTON_L2     : Int = OuyaController.BUTTON_L2;
+    static inline private var BUTTON_R1     : Int = OuyaController.BUTTON_R1;
+    static inline private var BUTTON_R2     : Int = OuyaController.BUTTON_R2;
+    static inline private var BUTTON_START  : Int = OuyaController.BUTTON_DPAD_RIGHT;
+    static inline private var BUTTON_BACK   : Int = OuyaController.BUTTON_DPAD_LEFT;
+    static inline private var BUTTON_SYSTEM : Int = OuyaController.BUTTON_MENU;
 
-	static inline public var STICK_DEADZONE:Float = 0.25;
+	static inline public var STICK_DEADZONE:Float = OuyaController.STICK_DEADZONE;
 #else
-    static inline public var BUTTON_FIRE1A:Int = 0;
-    static inline public var BUTTON_FIRE1B:Int = 4;
-    static inline public var BUTTON_FIRE2:Int = 5;
+    // This section was mapped with an XBOX360 controller plugged
+    // into a Mac. Additional mappings may need to be done for
+    // other controllers.
+
+    static inline private var BUTTON_BOTTOM : Int = 0; // BUTTON_A
+    static inline private var BUTTON_RIGHT  : Int = 1; //BUTTON_B;
+    static inline private var BUTTON_LEFT   : Int = 2; //BUTTON_X;
+    static inline private var BUTTON_TOP    : Int = 3; //BUTTON_Y;
+    static inline private var BUTTON_L1     : Int = 4; //BUTTON_L1;
+    static inline private var BUTTON_R1     : Int = 5; //BUTTON_R1;
+    static inline private var BUTTON_START  : Int = 8;
+    static inline private var BUTTON_BACK   : Int = 9;
+    static inline private var BUTTON_SYSTEM : Int = 10;
 
     static inline public var STICK_DEADZONE:Float = 0.4;
 #end
@@ -325,11 +339,15 @@ class CMLMovieClipControl
 #if ouya
         var leftX:Float = event.axis[OuyaController.AXIS_LS_X];
         var leftY:Float = event.axis[OuyaController.AXIS_LS_Y];
+        var L2:Float = 0;
+        var R2:Float = 0;
         //trace('OUYA: JoyID: ${event.id}  Dev: ${event.device}  X: $leftX  Y: $leftY');
 #else
         var leftX:Float = event.x;
         var leftY:Float = event.y;
-        //trace('JoyID: ${event.id}  Dev: ${event.device}  X: $leftX  Y: $leftY');
+        var L2:Float = event.z;
+        var R2:Float = event.axis[5]; // This works for xbox360 controller. Not sure if it's generic for other controllers or not.
+        //trace('JoyID: ${event.id}  Dev: ${event.device}  X: $leftX  Y: $leftY  L2: $L2   R2: $R2');
 #end
     
         if (event.x < -STICK_DEADZONE) {
@@ -351,29 +369,64 @@ class CMLMovieClipControl
             _flagPressed &= ~(1 << KEY_UP);
             _flagPressed &= ~(1 << KEY_DOWN);
         }
+
+#if (!ouya)
+        if (L2 >= 0) {
+            _flagPressed |= (1 << KEY_BUTTON6);
+
+        }
+        else {
+            _flagPressed &= ~(1 << KEY_BUTTON6);
+        }
+
+        if (R2 >= 0) {
+            _flagPressed |= (1 << KEY_BUTTON7);
+        }
+        else {
+            _flagPressed &= ~(1 << KEY_BUTTON7);
+        }
+#end
     }
 
     public function _onJoyButtonDown (event:JoystickEvent):Void {
-        trace('joy button down, id ${event.id}');
-        if (event.id == BUTTON_FIRE1A || event.id == BUTTON_FIRE1B) {
-            _flagPressed |= (1 << KEY_BUTTON0);
-        }
-        else if (event.id == BUTTON_FIRE2) {
-            _flagPressed |= (1 << KEY_BUTTON1);
+        switch (event.id) {
+        case BUTTON_BOTTOM: _flagPressed |= (1 << KEY_BUTTON0);
+        case BUTTON_RIGHT: _flagPressed |= (1 << KEY_BUTTON1);
+        case BUTTON_TOP: _flagPressed |= (1 << KEY_BUTTON2);
+        case BUTTON_LEFT: _flagPressed |= (1 << KEY_BUTTON3);
+        case BUTTON_L1: _flagPressed |= (1 << KEY_BUTTON4);
+        case BUTTON_R1: _flagPressed |= (1 << KEY_BUTTON5);
+        case BUTTON_BACK: _flagPressed |= (1 << KEY_ESCAPE);
+        case BUTTON_START: _flagPressed |= (1 << KEY_START);
+        case BUTTON_SYSTEM: _flagPressed |= (1 << KEY_SYSTEM);
+
+#if ouya
+        case BUTTON_L2: _flagPressed |= (1 << KEY_BUTTON6);
+        case BUTTON_R2: _flagPressed |= (1 << KEY_BUTTON7);
+#end
         }
     }
 
     public function _onJoyButtonUp (event:JoystickEvent):Void {
-        if (event.id == BUTTON_FIRE1A || event.id == BUTTON_FIRE1B) {
-            _flagPressed &= ~(1 << KEY_BUTTON0);
-        }
-        else if (event.id == BUTTON_FIRE2) {
-            _flagPressed &= ~(1 << KEY_BUTTON1);
+        switch (event.id) {
+            case BUTTON_BOTTOM: _flagPressed &= ~(1 << KEY_BUTTON0);
+            case BUTTON_RIGHT: _flagPressed &= ~(1 << KEY_BUTTON1);
+            case BUTTON_TOP: _flagPressed &= ~(1 << KEY_BUTTON2);
+            case BUTTON_LEFT: _flagPressed &= ~(1 << KEY_BUTTON3);
+            case BUTTON_L1: _flagPressed &= ~(1 << KEY_BUTTON4);
+            case BUTTON_R1: _flagPressed &= ~(1 << KEY_BUTTON5);
+            case BUTTON_BACK: _flagPressed &= ~(1 << KEY_ESCAPE);
+            case BUTTON_START: _flagPressed &= ~(1 << KEY_START);
+            case BUTTON_SYSTEM: _flagPressed &= ~(1 << KEY_SYSTEM);
+#if ouya
+            case BUTTON_L2: _flagPressed &= ~(1 << KEY_BUTTON6);
+            case BUTTON_R2: _flagPressed &= ~(1 << KEY_BUTTON7);
+#end
         }
     }
 
 
-    // internals
+// internals
 //----------------------------------------
     /** @public call from Event.ENTER_FRAME */
     public function _updateCounter() : Void

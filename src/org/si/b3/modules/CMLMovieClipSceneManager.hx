@@ -89,7 +89,6 @@ class CMLMovieClipSceneManager
                 if (_currentScene != null) _currentScene.exit();
                 do {
                     _currentSceneID = _nextSceneID;
-                    trace('Entered new scene $_currentSceneID');
                     if ((_currentSceneID != null) && (_sceneList[_currentSceneID] != null)) {
                         _currentScene = _sceneList[_currentSceneID];
 
