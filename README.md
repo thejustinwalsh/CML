@@ -29,7 +29,7 @@ The CannonML library is already installed in Wonderfl. You can check some codes 
 Installation
 ----
 To install, run 'haxelib install cannonml'.
-Then add '<haxelib name="openfl-ouya" />' to your project.xml.
+Then add '&lt;haxelib name="openfl-ouya" /&gt;' to your project.xml.
 
 
 
