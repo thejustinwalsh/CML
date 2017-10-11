@@ -3,23 +3,23 @@
 //--------------------------------------------------------------------------------
 package org.si.b3;
 
-import openfl._v2.display.BlendMode;
+import openfl.display.BlendMode;
 import org.si.cml.extensions.Actor;
 import org.si.cml.CMLObject;
-import openfl._v2.geom.ColorTransform;
-import openfl._v2.geom.ColorTransform;
-import openfl._v2.display.IBitmapDrawable;
-import openfl._v2.display.DisplayObjectContainer;
+import openfl.geom.ColorTransform;
+import openfl.geom.ColorTransform;
+import openfl.display.IBitmapDrawable;
+import openfl.display.DisplayObjectContainer;
 import org.si.b3.modules.CMLMovieClipSceneManager;
 import org.si.b3.modules.CMLMovieClipControl;
 import org.si.b3.modules.CMLMovieClipFPS;
 import org.si.cml.extensions.ScopeLimitObject;
-import openfl._v2.events.Event;
-import openfl._v2.geom.Matrix;
-import openfl._v2.geom.Point;
-import openfl._v2.geom.Rectangle;
-import openfl._v2.display.BitmapData;
-import openfl._v2.display.Bitmap;
+import openfl.events.Event;
+import openfl.geom.Matrix;
+import openfl.geom.Point;
+import openfl.geom.Rectangle;
+import openfl.display.BitmapData;
+import openfl.display.Bitmap;
 
 
 /** CMLMovieClip is a very simple framework for shmups ! <br/>
@@ -140,8 +140,8 @@ class CMLMovieClip extends Bitmap
         addEventListener(Event.ADDED_TO_STAGE, function(e:Event) : Void {
             // TODO: Fix this. Looks like arguments.callee is an AS3 thing not implemented in hax.
             // e.target.removeEventListener(e.type, arguments.callee);
-            control._onAddedToStage(e);
-            fps._onAddedToStage(e);
+            control._onAddedToStage(this.stage);
+            fps._onAddedToStage(this.stage);
             addEventListener(Event.ENTER_FRAME, _onFirstUpdate);
         });
 

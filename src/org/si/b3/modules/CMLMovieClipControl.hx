@@ -3,17 +3,12 @@
 //--------------------------------------------------------------------------------
 package org.si.b3.modules;
 
-import openfl._v2.events.Event;
-import openfl._v2.events.KeyboardEvent;
+import openfl.display.Stage;
+import openfl.events.Event;
+import openfl.events.KeyboardEvent;
 import openfl.errors.Error;
-import openfl._v2.Vector;
-import openfl.events.JoystickEvent;
+import openfl.Vector;
 import openfl.ui.Keyboard;
-
-#if ouya
-import openfl.utils.JNI;
-import tv.ouya.console.api.OuyaController;
-#end
 
 class CMLMovieClipControl
 {
@@ -301,26 +296,10 @@ class CMLMovieClipControl
         }
     }
 
-    // TODO: Add support for the right stick
-#if ouya
-    static inline private var BUTTON_BOTTOM : Int = OuyaController.BUTTON_O;
-    static inline private var BUTTON_RIGHT  : Int = OuyaController.BUTTON_A;
-    static inline private var BUTTON_LEFT   : Int = OuyaController.BUTTON_U;
-    static inline private var BUTTON_TOP    : Int = OuyaController.BUTTON_Y;
-    static inline private var BUTTON_L1     : Int = OuyaController.BUTTON_L1;
-    static inline private var BUTTON_L2     : Int = OuyaController.BUTTON_L2;
-    static inline private var BUTTON_R1     : Int = OuyaController.BUTTON_R1;
-    static inline private var BUTTON_R2     : Int = OuyaController.BUTTON_R2;
-    static inline private var BUTTON_START  : Int = OuyaController.BUTTON_DPAD_RIGHT;
-    static inline private var BUTTON_BACK   : Int = OuyaController.BUTTON_DPAD_LEFT;
-    static inline private var BUTTON_SYSTEM : Int = OuyaController.BUTTON_MENU;
-
-	static inline public var STICK_DEADZONE:Float = OuyaController.STICK_DEADZONE;
-#else
+/*
     // This section was mapped with an XBOX360 controller plugged
     // into a Mac. Additional mappings may need to be done for
     // other controllers.
-
     static inline private var BUTTON_BOTTOM : Int = 0; // BUTTON_A
     static inline private var BUTTON_RIGHT  : Int = 1; //BUTTON_B;
     static inline private var BUTTON_LEFT   : Int = 2; //BUTTON_X;
@@ -332,23 +311,14 @@ class CMLMovieClipControl
     static inline private var BUTTON_SYSTEM : Int = 10;
 
     static inline public var STICK_DEADZONE:Float = 0.4;
-#end
 
     private function _onJoyAxisMove (event:JoystickEvent):Void {
         // you can handle multiple joysticks by checking event.device
-#if ouya
-        var leftX:Float = event.axis[OuyaController.AXIS_LS_X];
-        var leftY:Float = event.axis[OuyaController.AXIS_LS_Y];
-        var L2:Float = 0;
-        var R2:Float = 0;
-        //trace('OUYA: JoyID: ${event.id}  Dev: ${event.device}  X: $leftX  Y: $leftY');
-#else
         var leftX:Float = event.x;
         var leftY:Float = event.y;
         var L2:Float = event.z;
         var R2:Float = event.axis[5]; // This works for xbox360 controller. Not sure if it's generic for other controllers or not.
         //trace('JoyID: ${event.id}  Dev: ${event.device}  X: $leftX  Y: $leftY  L2: $L2   R2: $R2');
-#end
     
         if (event.x < -STICK_DEADZONE) {
             _flagPressed |= (1 << KEY_LEFT);
@@ -370,7 +340,6 @@ class CMLMovieClipControl
             _flagPressed &= ~(1 << KEY_DOWN);
         }
 
-#if (!ouya)
         if (L2 >= 0) {
             _flagPressed |= (1 << KEY_BUTTON6);
 
@@ -385,7 +354,6 @@ class CMLMovieClipControl
         else {
             _flagPressed &= ~(1 << KEY_BUTTON7);
         }
-#end
     }
 
     public function _onJoyButtonDown (event:JoystickEvent):Void {
@@ -399,11 +367,6 @@ class CMLMovieClipControl
         case BUTTON_BACK: _flagPressed |= (1 << KEY_ESCAPE);
         case BUTTON_START: _flagPressed |= (1 << KEY_START);
         case BUTTON_SYSTEM: _flagPressed |= (1 << KEY_SYSTEM);
-
-#if ouya
-        case BUTTON_L2: _flagPressed |= (1 << KEY_BUTTON6);
-        case BUTTON_R2: _flagPressed |= (1 << KEY_BUTTON7);
-#end
         }
     }
 
@@ -418,13 +381,9 @@ class CMLMovieClipControl
             case BUTTON_BACK: _flagPressed &= ~(1 << KEY_ESCAPE);
             case BUTTON_START: _flagPressed &= ~(1 << KEY_START);
             case BUTTON_SYSTEM: _flagPressed &= ~(1 << KEY_SYSTEM);
-#if ouya
-            case BUTTON_L2: _flagPressed &= ~(1 << KEY_BUTTON6);
-            case BUTTON_R2: _flagPressed &= ~(1 << KEY_BUTTON7);
-#end
         }
     }
-
+*/
 
 // internals
 //----------------------------------------
@@ -446,13 +405,13 @@ class CMLMovieClipControl
     
     
     /** @public call from Event.ADDED_TO_STAGE */
-    public function _onAddedToStage(e:Event) : Void
+    public function _onAddedToStage(stage:Stage) : Void
     {
-        e.target.stage.addEventListener(KeyboardEvent.KEY_DOWN, _onKeyDown);
-        e.target.stage.addEventListener(KeyboardEvent.KEY_UP,   _onKeyUp);
-        e.target.stage.addEventListener(JoystickEvent.AXIS_MOVE, _onJoyAxisMove);
-        e.target.stage.addEventListener(JoystickEvent.BUTTON_DOWN, _onJoyButtonDown);
-        e.target.stage.addEventListener(JoystickEvent.BUTTON_UP, _onJoyButtonUp);
+        stage.addEventListener(KeyboardEvent.KEY_DOWN, _onKeyDown);
+        stage.addEventListener(KeyboardEvent.KEY_UP,   _onKeyUp);
+        //e.target.stage.addEventListener(JoystickEvent.AXIS_MOVE, _onJoyAxisMove);
+        //e.target.stage.addEventListener(JoystickEvent.BUTTON_DOWN, _onJoyButtonDown);
+        //e.target.stage.addEventListener(JoystickEvent.BUTTON_UP, _onJoyButtonUp);
     }
 }
 

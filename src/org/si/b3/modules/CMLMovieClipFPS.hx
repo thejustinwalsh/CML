@@ -5,8 +5,9 @@
 
 package org.si.b3.modules;
 
-import openfl._v2.Lib;
-import openfl._v2.events.Event;
+import openfl.display.Stage;
+import openfl.Lib;
+import openfl.events.Event;
 import flash.events.*;
 import flash.display.*;
 
@@ -117,9 +118,9 @@ class CMLMovieClipFPS
 
 
     /** @public call from Event.ADDED_TO_STAGE */
-    public function _onAddedToStage(e:Event) : Void
+    public function _onAddedToStage(stage:Stage) : Void
     {
-        _frameRateMS = e.target.stage.frameRate * 0.001;
+        _frameRateMS = stage.frameRate * 0.001;
     }
 }
 

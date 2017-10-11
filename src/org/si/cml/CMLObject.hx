@@ -15,7 +15,7 @@ import org.si.cml.core.CMLState;
 import org.si.cml.core.CMLSinTable;
 import org.si.cml.core.CMLListElem;
 import openfl.errors.Error;
-import openfl._v2.geom.Point;
+import openfl.geom.Point;
 
 /** <b>Basic class for all objects.</b>
  * @see CMLObject#initialize()

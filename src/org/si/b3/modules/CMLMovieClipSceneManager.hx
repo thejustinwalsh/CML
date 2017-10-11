@@ -5,7 +5,7 @@
 
 package org.si.b3.modules;
 
-import openfl._v2.events.Event;
+import openfl.events.Event;
 import flash.display.*;
 import flash.events.*;
 import org.si.b3.*;

@@ -5,13 +5,13 @@
 
 package org.si.b3;
 
-import openfl._v2.geom.Matrix;
+import openfl.geom.Matrix;
 import openfl.display.BitmapDataChannel;
-import openfl._v2.geom.ColorTransform;
-import openfl._v2.Vector;
-import openfl._v2.geom.Point;
+import openfl.geom.ColorTransform;
+import openfl.Vector;
+import openfl.geom.Point;
 import openfl.geom.Rectangle;
-import openfl._v2.display.BitmapData;
+import openfl.display.BitmapData;
 
 
 /** CMLMovieClipTexture provides BitmapData for CMLMovieClip. */
