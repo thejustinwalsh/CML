@@ -8,6 +8,6 @@
     "releasenote": "",
     "contributors": ["gunnbr", "thejustinwalsh"],    
     "dependencies": {
-      "openfl": "6.0.0"
+      "openfl": ""
     }
   }
