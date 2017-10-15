@@ -1,0 +1,13 @@
+{     
+    "name": "cml",
+    "url" : "https://github.com/thejustinwalsh/CML",
+    "license": "BSD",  
+    "tags": ["cml", "bullets", "dsl", "stg", "shmup"],
+    "description": "CannonML (Cannon Macro Language) bullet pattern generator and markup",
+    "version": "0.0.5",
+    "releasenote": "",
+    "contributors": ["gunnbr", "thejustinwalsh"],    
+    "dependencies": {
+      "openfl": "6.0.0"
+    }
+  }
